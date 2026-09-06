@@ -1,0 +1,1161 @@
+/* ==========================================================================
+   TikTok LIVE Jockey Bot - 9:16 OBS & Stream Layout Styles
+   ========================================================================== */
+
+:root {
+  --header-height: 1.05cm;
+  --bottom-header-height: 3cm;
+  --bottom-zone-height: 3cm;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+  background-color: #030304;
+  color: #f3f4f6;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 9:16 Vertical Mobile / OBS Container */
+.stream-container {
+  width: 100%;
+  height: 100vh;
+  max-width: 480px;
+  aspect-ratio: 9 / 16;
+  max-height: 100vh;
+  background-color: transparent;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
+  border-left: 1px solid #1f2228;
+  border-right: 1px solid #1f2228;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   1. BOTTOM CHAT ZONE (TWICE UPPER HEADER BAR) & FILL REST WITH HORSETRACK
+   Upper live/lobby/host bar: --header-height
+   Bottom zone: exactly twice the upper bar size (--bottom-zone-height)
+   Horsetrack/game layout: fills 100% of the remaining screen height
+   ========================================================================== */
+
+#app,
+#game-container,
+#gameContainer,
+.game-container {
+  width: 100%;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  margin-bottom: 0 !important;
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: #030804;
+  box-sizing: border-box;
+  border-bottom: none;
+}
+
+/* Race track container fills the rest of the screen */
+.tracks-area-container {
+  flex: 1 1 0px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #08090b;
+  box-sizing: border-box;
+  margin-bottom: 0 !important;
+}
+
+.game-container .tracks-area-container {
+  height: auto !important;
+  margin-bottom: 0 !important;
+  flex: 1 1 0px !important;
+}
+
+/* Dedicated Bottom TikTok Chat Zone: Exactly twice the size of the upper live/lobby/host bar */
+.tiktok-chat-zone {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--bottom-zone-height) !important;
+  max-height: var(--bottom-zone-height) !important;
+  min-height: var(--bottom-zone-height) !important;
+  width: 100%;
+  background: transparent !important;
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  box-sizing: border-box;
+  overflow: hidden !important;
+}
+
+/* ==========================================================================
+   3. COMPACT UI ELEMENTS
+   Upper live/lobby/host bar with standardized height
+   ========================================================================== */
+
+/* Top Header Bar (Timer/Host) - Slightly smaller (1.05cm) */
+.header-bar {
+  height: var(--header-height, 1.05cm) !important;
+  max-height: var(--header-height, 1.05cm) !important;
+  min-height: var(--header-height, 1.05cm) !important;
+  background: rgba(4, 14, 6, 0.98);
+  border-bottom: 1px solid #0c2610;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 8px;
+  z-index: 30;
+  flex-shrink: 0;
+  backdrop-filter: blur(10px);
+  box-sizing: border-box;
+}
+
+.header-left-hud {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.live-badge {
+  background: rgba(127, 29, 29, 0.7);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #f87171;
+  padding: 1px 5px;
+  border-radius: 9999px;
+  font-size: clamp(8px, 1vh, 9px);
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-family: 'Rajdhani', sans-serif;
+  animation: pulse 1.5s infinite;
+}
+
+.live-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  box-shadow: 0 0 5px #ef4444;
+}
+
+.title-text {
+  font-size: clamp(10px, 1.3vh, 12px);
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  background: linear-gradient(to right, #fbbf24, #fdba74, #f27d26);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: 'Rajdhani', sans-serif;
+  white-space: nowrap;
+}
+
+.header-center-hud {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.timer-pill {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fcd34d;
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: clamp(9px, 1.1vh, 10.5px);
+  font-weight: 800;
+  font-family: 'Rajdhani', sans-serif;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.header-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.header-controls-btn {
+  background: #16181d;
+  border: 1px solid #2d313b;
+  color: #f27d26;
+  font-size: clamp(8.5px, 1vh, 10px);
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-family: 'Rajdhani', sans-serif;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.header-controls-btn.active {
+  background: #f27d26;
+  color: #050505;
+  border-color: #f27d26;
+}
+
+.header-controls-btn:hover {
+  background: #23262d;
+  color: #fbbf24;
+}
+
+/* Bottom Header / Info Bar - Exactly 3cm in height */
+.bottom-header,
+.footer-info-bar {
+  height: var(--bottom-header-height, 3cm) !important;
+  max-height: var(--bottom-header-height, 3cm) !important;
+  min-height: var(--bottom-header-height, 3cm) !important;
+  background: rgba(4, 14, 6, 0.98);
+  border-top: 1px solid #0c2610;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 10px;
+  font-size: clamp(8.5px, 1.1vh, 10px);
+  font-family: 'Rajdhani', sans-serif;
+  z-index: 25;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.footer-info-left {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  color: #cbd5e1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.footer-bet-tag {
+  color: #f27d26;
+  font-weight: 800;
+}
+
+.footer-tap-tag {
+  color: #fbbf24;
+  font-weight: 800;
+}
+
+.footer-gift-tag {
+  color: #34d399;
+  font-weight: 800;
+}
+
+.footer-dot {
+  color: #475569;
+  font-size: 7px;
+}
+
+.footer-info-right {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.footer-sim-pill {
+  background: #181b22;
+  border: 1px solid #2a2e39;
+  color: #cbd5e1;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: clamp(7.5px, 0.95vh, 8.5px);
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Rajdhani', sans-serif;
+  transition: all 0.15s ease;
+}
+
+.footer-sim-pill:hover {
+  background: #232733;
+  color: #fbbf24;
+  border-color: #f27d26;
+}
+
+/* ==========================================================================
+   2. DYNAMIC LANE SCALING (6 TO 9 RACERS)
+   Lanes scale dynamically using CSS Flexbox (flex: 1).
+   When 6 racers: naturally expand.
+   When 7, 8, 9 racers: automatically shrink lane padding, avatar sizes,
+   and text scale (font-size: clamp(...)) so all lanes fit perfectly inside 78vh
+   without pushing any lane down into the bottom chat zone.
+   ========================================================================== */
+
+.tracks-area {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Horse Lane (Base Flexbox - Dynamic Flex Sizing 6-9 Racers) */
+.lane,
+.track-lane {
+  flex: 1 1 0px !important;
+  min-height: 0 !important;
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(to bottom, #1e4620, #143516);
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  overflow: visible;
+  box-sizing: border-box;
+  padding: clamp(1px, 0.4vh, 4px) 0;
+  transition: padding 0.2s ease;
+}
+
+/* ==========================================================================
+   COMPACT INLINE VIP STYLING (NO VERTICAL OVERFLOW)
+   ========================================================================== */
+@keyframes vipBorderPulse {
+  0%, 100% {
+    border-color: #FFD700;
+    box-shadow: inset 0 0 8px rgba(255, 215, 0, 0.4);
+  }
+  50% {
+    border-color: #ffe566;
+    box-shadow: inset 0 0 14px rgba(255, 215, 0, 0.65), 0 0 4px rgba(255, 215, 0, 0.3);
+  }
+}
+
+.vip-lane,
+.lane.vip-lane,
+.track-lane.vip-lane {
+  border: 1.5px solid #FFD700 !important;
+  box-shadow: inset 0 0 8px rgba(255, 215, 0, 0.4) !important;
+  animation: vipBorderPulse 2s infinite ease-in-out !important;
+}
+
+/* Avatar container with relative positioning so crown overlays top-right without vertical overflow */
+.avatar-wrap,
+.avatar-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Small gold crown badge overlay attached to top-right corner of avatar circle */
+.vip-crown-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 5;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+}
+
+/* Style their nameplate with gold text color */
+.username-label.vip-name,
+.vip-name {
+  color: #FFD700 !important;
+  font-weight: bold !important;
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.4);
+}
+
+/* Append a small [VIP] tag next to their handle */
+.vip-tag {
+  color: #FFD700;
+  font-weight: bold;
+  font-size: clamp(7.5px, 0.95vh, 9px);
+  letter-spacing: 0.04em;
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  padding: 0 3px;
+  border-radius: 3px;
+  margin-left: 2px;
+  font-family: 'Rajdhani', sans-serif;
+  vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.track-turf {
+  background: linear-gradient(to bottom, #07170a, #0c2411 45%, #061409) !important;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+}
+
+.track-sand {
+  background: linear-gradient(to bottom, #051208, #091d0e 50%, #040e06) !important;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+}
+
+/* VIP Lane Golden Boundaries & Ambience */
+.vip-lane {
+  border-bottom: 2px solid #FFD700 !important;
+  box-shadow: inset 0 0 16px rgba(255, 215, 0, 0.12), 0 1px 10px rgba(255, 215, 0, 0.55) !important;
+}
+
+.vip-lane::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #FFD700 !important;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.75) !important;
+  z-index: 20;
+  pointer-events: none;
+}
+
+/* Clean Country HUD Tag (Single Line, No Duplicate Sub-Labels) */
+.country-hud {
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: clamp(3px, 0.5vh, 5px);
+  pointer-events: none;
+}
+
+.lane-num-badge {
+  width: clamp(18px, 2.4vh, 22px);
+  height: clamp(18px, 2.4vh, 22px);
+  border-radius: 4px;
+  background: rgba(17, 18, 21, 0.95);
+  border: 1px solid #2d313b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(9px, 1.2vh, 11px);
+  font-weight: 900;
+  font-family: 'Rajdhani', sans-serif;
+  color: #f27d26;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
+}
+
+.country-tag-box {
+  background: rgba(17, 18, 21, 0.92);
+  border: 1px solid #23262d;
+  border-radius: 4px;
+  padding: clamp(1px, 0.2vh, 2px) clamp(4px, 0.6vh, 6px);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+.country-name-text {
+  font-size: clamp(8px, 1.1vh, 10px);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #f3f4f6;
+  font-family: 'Rajdhani', sans-serif;
+  white-space: nowrap;
+}
+
+/* Finish Line Strip (Strictly at Far-Right End 100%) */
+.finish-line {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 22px;
+  background: repeating-conic-gradient(#ffffff 0% 25%, #0d0f12 0% 50%) 50% / 10px 10px;
+  border-left: 2px solid #f27d26;
+  z-index: 10;
+  opacity: 0.95;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px rgba(242, 125, 38, 0.3);
+  pointer-events: none;
+}
+
+.finish-text {
+  font-size: 7.5px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  color: #050505;
+  background: #f27d26;
+  padding: 1px 3px;
+  border-radius: 2px;
+  transform: rotate(-90deg);
+  white-space: nowrap;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+/* Horse Runner Container */
+.horse-runner {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 15;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: left 0.4s ease-out;
+  will-change: left;
+}
+
+/* TikTok Profile Floating Badge */
+.player-badge {
+  padding: clamp(1px, 0.3vh, 3px) clamp(4px, 0.6vh, 6px);
+  border-radius: 9999px;
+  font-size: clamp(9px, 1.1vh, 11px);
+  font-weight: 800;
+  font-family: 'Rajdhani', sans-serif;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+  border: 1px solid #2d313b;
+  background: rgba(17, 18, 21, 0.95);
+  color: #f3f4f6;
+  display: flex;
+  align-items: center;
+  gap: clamp(2px, 0.4vh, 4px);
+  backdrop-filter: blur(8px);
+  margin-bottom: clamp(1px, 0.2vh, 2px);
+  pointer-events: none;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.avatar-circle {
+  width: clamp(16px, 2.2vh, 20px);
+  height: clamp(16px, 2.2vh, 20px);
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.avatar-fallback {
+  width: clamp(16px, 2.2vh, 20px);
+  height: clamp(16px, 2.2vh, 20px);
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  background: linear-gradient(135deg, #f27d26, #f59e0b);
+  color: #050505;
+  font-weight: 900;
+  font-size: clamp(8px, 1vh, 10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.username-label {
+  font-size: clamp(8.5px, 1.1vh, 10.5px);
+  font-weight: 800;
+  max-width: clamp(60px, 9vw, 85px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Stamina Bar */
+.stamina-bar {
+  width: clamp(40px, 5.5vh, 55px);
+  height: clamp(2px, 0.35vh, 3px);
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-bottom: 1px;
+  border: 0.5px solid rgba(255, 255, 255, 0.2);
+}
+
+.stamina-fill {
+  height: 100%;
+  background: #10b981;
+  transition: width 0.2s ease, background 0.3s ease;
+}
+
+/* Horse Runner Image */
+.horse-runner-img {
+  width: auto;
+  height: clamp(40px, 5vh, 52px);
+  object-fit: contain;
+  transform-origin: 50% 70%;
+  transition: transform 0.2s ease;
+}
+
+.horse-runner-img.lobby {
+  animation: horseBob 1.8s ease-in-out infinite alternate;
+}
+
+.horse-runner-img.racing {
+  animation: horseGallop 0.45s ease-in-out infinite;
+}
+
+.horse-runner-img.nitro {
+  filter: drop-shadow(0 0 10px #f59e0b) drop-shadow(0 0 18px #ef4444);
+  animation: horseGallop 0.28s ease-in-out infinite;
+}
+
+/* Aura Canvas Centered at Hooves */
+.horse-canvas-aura {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-62%);
+  bottom: -2px;
+  pointer-events: none;
+  z-index: 0;
+  width: 140px;
+  height: 70px;
+}
+
+/* ==========================================================================
+   DYNAMIC SCALING PER RACER COUNT (6, 7, 8, 9 RACERS)
+   ========================================================================== */
+
+/* 6 Racers: Restored to original large size */
+.tracks-area[data-lane-count="6"] .track-lane {
+  padding: 2px 0;
+}
+.tracks-area[data-lane-count="6"] .horse-runner-img {
+  height: clamp(38px, 4.8vh, 48px);
+}
+
+/* 7 Racers: Large prominent horses with floating avatars */
+.tracks-area[data-lane-count="7"] .track-lane {
+  padding: 0;
+}
+.tracks-area[data-lane-count="7"] .horse-runner {
+  top: auto !important;
+  bottom: 1px !important;
+  transform: none !important;
+}
+.tracks-area[data-lane-count="7"] .horse-runner-img {
+  height: clamp(36px, 4.4vh, 44px) !important;
+}
+.tracks-area[data-lane-count="7"] .avatar-circle,
+.tracks-area[data-lane-count="7"] .avatar-fallback {
+  width: 16px !important;
+  height: 16px !important;
+}
+.tracks-area[data-lane-count="7"] .player-badge {
+  padding: 1px 4px !important;
+  font-size: clamp(8px, 1vh, 9px) !important;
+  margin-bottom: 2px !important;
+  gap: 2px !important;
+}
+.tracks-area[data-lane-count="7"] .username-label {
+  font-size: clamp(8px, 1vh, 9px) !important;
+  max-width: 64px !important;
+}
+.tracks-area[data-lane-count="7"] .stamina-bar {
+  width: clamp(34px, 4.2vh, 40px) !important;
+  height: 2px !important;
+  margin-bottom: 2px !important;
+}
+.tracks-area[data-lane-count="7"] .vip-crown-badge {
+  width: 12px !important;
+  height: 12px !important;
+  font-size: 9px !important;
+}
+.tracks-area[data-lane-count="7"] .lane-num-badge {
+  width: clamp(16px, 2vh, 18px);
+  height: clamp(16px, 2vh, 18px);
+  font-size: clamp(8px, 1vh, 9px);
+}
+.tracks-area[data-lane-count="7"] .country-name-text {
+  font-size: clamp(7.5px, 0.95vh, 8.5px);
+}
+
+/* 8 Racers: Large prominent horses with floating avatars */
+.tracks-area[data-lane-count="8"] .track-lane {
+  padding: 0;
+}
+.tracks-area[data-lane-count="8"] .horse-runner {
+  top: auto !important;
+  bottom: 0px !important;
+  transform: none !important;
+}
+.tracks-area[data-lane-count="8"] .horse-runner-img {
+  height: clamp(33px, 4.0vh, 40px) !important;
+}
+.tracks-area[data-lane-count="8"] .avatar-circle,
+.tracks-area[data-lane-count="8"] .avatar-fallback {
+  width: 15px !important;
+  height: 15px !important;
+}
+.tracks-area[data-lane-count="8"] .player-badge {
+  padding: 0 3px !important;
+  font-size: clamp(7.5px, 0.9vh, 8.5px) !important;
+  margin-bottom: 1.5px !important;
+  gap: 2px !important;
+}
+.tracks-area[data-lane-count="8"] .username-label {
+  font-size: clamp(7.5px, 0.9vh, 8.5px) !important;
+  max-width: 58px !important;
+}
+.tracks-area[data-lane-count="8"] .stamina-bar {
+  width: clamp(30px, 3.8vh, 36px) !important;
+  height: 2px !important;
+  margin-bottom: 1.5px !important;
+}
+.tracks-area[data-lane-count="8"] .vip-crown-badge {
+  width: 11px !important;
+  height: 11px !important;
+  font-size: 8.5px !important;
+}
+.tracks-area[data-lane-count="8"] .lane-num-badge {
+  width: 16px;
+  height: 16px;
+  font-size: 8.5px;
+}
+.tracks-area[data-lane-count="8"] .country-name-text {
+  font-size: 7.5px;
+}
+.tracks-area[data-lane-count="8"] .country-tag-box {
+  padding: 1px 3px;
+}
+
+/* 9 Racers: Large horses as big as possible without escaping border */
+.tracks-area[data-lane-count="9"] .track-lane {
+  padding: 0;
+}
+.tracks-area[data-lane-count="9"] .horse-runner {
+  top: auto !important;
+  bottom: 0px !important;
+  transform: none !important;
+}
+.tracks-area[data-lane-count="9"] .horse-runner-img {
+  height: clamp(30px, 3.6vh, 36px) !important;
+}
+.tracks-area[data-lane-count="9"] .avatar-circle,
+.tracks-area[data-lane-count="9"] .avatar-fallback {
+  width: 14px !important;
+  height: 14px !important;
+  font-size: 8px !important;
+}
+.tracks-area[data-lane-count="9"] .player-badge {
+  padding: 0 3px !important;
+  font-size: clamp(7px, 0.85vh, 8px) !important;
+  margin-bottom: 1px !important;
+  gap: 2px !important;
+}
+.tracks-area[data-lane-count="9"] .username-label {
+  font-size: clamp(7px, 0.85vh, 8px) !important;
+  max-width: 52px !important;
+}
+.tracks-area[data-lane-count="9"] .stamina-bar {
+  width: clamp(28px, 3.4vh, 34px) !important;
+  height: 2px !important;
+  margin-bottom: 1px !important;
+}
+.tracks-area[data-lane-count="9"] .vip-crown-badge {
+  width: 10px !important;
+  height: 10px !important;
+  font-size: 8px !important;
+}
+.tracks-area[data-lane-count="9"] .lane-num-badge {
+  width: 15px;
+  height: 15px;
+  font-size: 8px;
+}
+.tracks-area[data-lane-count="9"] .country-name-text {
+  font-size: 7px;
+}
+.tracks-area[data-lane-count="9"] .country-tag-box {
+  padding: 0 2px;
+}
+
+/* Dense lanes utility class */
+.tracks-area.dense-lanes .track-lane {
+  min-height: 0;
+  overflow: visible;
+}
+
+/* ==========================================================================
+   INTERMISSION & CEREMONY OVERLAYS
+   ========================================================================== */
+
+.intermission-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(9, 10, 14, 0.95);
+  backdrop-filter: blur(8px);
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px;
+  overflow-y: auto;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.intermission-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.98);
+}
+
+.progression-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #1f2228;
+  padding-bottom: 4px;
+}
+
+.progression-title {
+  font-size: 11px;
+  font-weight: 900;
+  font-family: 'Rajdhani', sans-serif;
+  color: #fbbf24;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.progression-racer-pills {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  margin-bottom: 8px;
+  padding-bottom: 2px;
+}
+
+.racer-pill {
+  background: #15171d;
+  border: 1px solid #282c37;
+  color: #cbd5e1;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  font-size: 9px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.racer-pill.active {
+  background: #f27d26;
+  color: #050505;
+  border-color: #f27d26;
+}
+
+.player-profile-card {
+  background: #121419;
+  border: 1px solid #23262d;
+  border-radius: 6px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.profile-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid #f27d26;
+}
+
+.profile-name {
+  font-size: 11px;
+  font-weight: 900;
+  color: #fff;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.profile-metrics-row {
+  display: flex;
+  gap: 6px;
+  font-size: 8.5px;
+  color: #94a3b8;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.tier-list-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  flex: 1;
+}
+
+.tier-card {
+  background: #111317;
+  border: 1px solid #1f2228;
+  border-radius: 5px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+
+.tier-card.unlocked {
+  border-color: rgba(242, 125, 38, 0.5);
+  background: rgba(242, 125, 38, 0.05);
+}
+
+.tier-card.locked {
+  opacity: 0.5;
+  filter: grayscale(0.8);
+}
+
+.tier-badge {
+  font-size: 7.5px;
+  font-weight: 900;
+  font-family: 'Rajdhani', sans-serif;
+  color: #f27d26;
+}
+
+.tier-img {
+  width: 36px;
+  height: 26px;
+  object-fit: contain;
+  margin: 2px 0;
+}
+
+.tier-name {
+  font-size: 8px;
+  font-weight: 800;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.tier-req {
+  font-size: 7px;
+  color: #64748b;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+/* Unlock Celebration Banner */
+.unlock-celebration-banner {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.95), rgba(239, 68, 68, 0.95));
+  border: 1.5px solid #fef08a;
+  border-radius: 8px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 40;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+  animation: slideDownBounce 0.5s ease-out;
+}
+
+.unlock-img-wrap {
+  width: 36px;
+  height: 36px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.unlock-skin-img {
+  width: 32px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.unlock-header-tag {
+  font-size: 8.5px;
+  font-weight: 900;
+  color: #050505;
+  font-family: 'Rajdhani', sans-serif;
+  letter-spacing: 0.05em;
+}
+
+.unlock-skin-title {
+  font-size: 11px;
+  font-weight: 900;
+  color: #ffffff;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.unlock-meta {
+  font-size: 8px;
+  color: #fef3c7;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   CONTROLS MODAL & BUTTONS
+   ========================================================================== */
+
+.controls-modal {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #0d0f14;
+  border-top: 1px solid #23262d;
+  padding: 10px 12px;
+  z-index: 50;
+  transform: translateY(100%);
+  transition: transform 0.25s ease-out;
+  box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.7);
+}
+
+.controls-modal.open {
+  transform: translateY(0);
+}
+
+.controls-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.btn-action {
+  background: #181b22;
+  border: 1px solid #2a2e39;
+  color: #cbd5e1;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: 'Rajdhani', sans-serif;
+  transition: all 0.15s ease;
+}
+
+.btn-action:hover {
+  background: #252833;
+  color: #f27d26;
+  border-color: #f27d26;
+}
+
+.btn-action.btn-primary {
+  background: #f27d26;
+  color: #050505;
+  border-color: #f27d26;
+}
+
+.btn-action.btn-primary:hover {
+  background: #fb923c;
+}
+
+/* Victory Ceremony Modal */
+.victory-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.victory-modal-card {
+  width: 100%;
+  max-width: 320px;
+  background: #111317;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9), 0 0 20px rgba(245, 158, 11, 0.2);
+}
+
+/* Keyframes */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes horseBob {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-3px); }
+}
+
+@keyframes horseGallop {
+  0% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-4px) rotate(-3deg); }
+  50% { transform: translateY(1px) rotate(2deg); }
+  75% { transform: translateY(-3px) rotate(-2deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+@keyframes slideDownBounce {
+  0% { transform: translateY(-40px); opacity: 0; }
+  70% { transform: translateY(4px); opacity: 1; }
+  100% { transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

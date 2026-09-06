@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TikTok LIVE Jockey Bot</title>
+    <meta name="description" content="Interactive TikTok LIVE Jockey Bot horse racing game with 12-horse progression, spectator betting economy, host tournaments, and real-time Socket.io multiplayer." />
+    <meta property="og:title" content="TikTok LIVE Jockey Bot" />
+    <meta property="og:description" content="Interactive TikTok LIVE Jockey Bot horse racing game with 12-horse progression, spectator betting economy, host tournaments, and real-time Socket.io multiplayer." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Chakra+Petch:ital,wght@0,400;0,600;0,700;1,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&family=Rajdhani:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      .horse-runner-img {
+        max-width: 82px;
+        height: auto;
+        object-fit: contain;
+        transform-origin: 50% 70%;
+        transition: left 0.4s ease-out;
+      }
+      .avatar-circle {
+        border-radius: 50%;
+        border: 1.5px solid rgba(255, 255, 255, 0.85);
+        object-fit: cover;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .avatar-fallback {
+        border-radius: 50%;
+        border: 1.5px solid rgba(255, 255, 255, 0.85);
+        background: linear-gradient(135deg, #f27d26, #f59e0b);
+        color: #050505;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body class="bg-[#050505] text-[#f3f4f6] overflow-hidden select-none font-sans">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

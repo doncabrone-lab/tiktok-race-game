@@ -1,0 +1,8 @@
+{
+  "name": "Remix TikTok LIVE JOCKEY RACING BOT",
+  "description": "Interactive TikTok LIVE Jockey Bot horse racing game with 12-horse progression, spectator betting economy, host tournaments, and real-time Socket.io multiplayer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
