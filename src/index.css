@@ -531,3 +531,18 @@ body {
 .tier-glow-10 { filter: drop-shadow(0 0 14px #22d3ee) drop-shadow(0 0 30px #e0e7ff); }
 .tier-glow-11 { filter: drop-shadow(0 0 16px #f59e0b) drop-shadow(0 0 35px #d97706); }
 .tier-glow-12 { filter: drop-shadow(0 0 20px #ef4444) drop-shadow(0 0 45px #dc2626); }
+
+/* Prevent top-lane avatar overflow clipping */
+.track-container,
+.race-track,
+.lanes-container,
+.lane,
+.track-lane {
+  overflow: visible !important;
+}
+
+/* Add a margin at the top of the track container so the top avatar is fully visible below the timer */
+.track-container,
+.race-track {
+  margin-top: 15px !important;
+}
