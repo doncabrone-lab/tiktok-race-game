@@ -1,9 +1,8 @@
 import React from 'react';
-import { RaceHorse } from '../types.ts';
-import { HorseRunner } from './HorseRunner.tsx';
+import { Horse } from '../types';
 
-interface Props {
-  horse: RaceHorse;
+interface TrackLaneProps {
+  horse: Horse;
   isRacing: boolean;
   isLobby: boolean;
   laneIndex: number;
@@ -11,51 +10,79 @@ interface Props {
   onTap: () => void;
 }
 
-export const TrackLane: React.FC<Props> = ({
+export const TrackLane: React.FC<TrackLaneProps> = ({
   horse,
   isRacing,
-  isLobby,
   laneIndex,
-  totalLanes,
   onTap,
 }) => {
-  // Alternate subtle clay track striping for depth
-  const isEven = laneIndex % 2 === 0;
   const isVip = !!(horse.is_vip || horse.isVip);
+
+  // Dynamic horse sprite/glow depending on VIP status
+  const getHorseSprite = () => {
+    if (isVip) {
+      return {
+        filter: 'drop-shadow(0 0 10px rgba(255, 215, 0, 0.8))',
+        particleColor: 'rgba(255, 215, 0, 0.6)',
+      };
+    }
+    return {
+      filter: 'none',
+      particleColor: 'rgba(242, 125, 38, 0.5)',
+    };
+  };
+
+  const spriteStyle = getHorseSprite();
+
+  // Position relative to track length (2500px)
+  const START_POS = 150;
+  const FINISH_POS = 2440;
+  const currentX = START_POS + (FINISH_POS - START_POS) * (Math.min(100, horse.distance || 0) / 100);
+
+  const avatarSrc =
+    horse.avatarUrl ||
+    `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(horse.username)}&backgroundColor=111215`;
 
   return (
     <div
       onClick={onTap}
-      className={`lane track-lane relative w-[2500px] flex-1 flex items-end border-b-2 ${
-        isVip
-          ? 'border-[#FFD700] shadow-[0_1px_10px_rgba(255,215,0,0.65)]'
-          : 'border-white'
-      } overflow-visible cursor-pointer select-none transition-colors ${
-        isEven ? 'track-turf' : 'track-sand'
-      } ${isVip ? 'vip-lane' : ''}`}
-      style={{ minHeight: 0 }}
+      style={{ flex: '1 1 0px', minHeight: 0 }}
+      className="w-full relative flex items-center border-b border-white/40 overflow-visible cursor-pointer select-none"
     >
-      {/* Top Boundary Line: Gold for VIP Lane or White for Lane 1 */}
-      {isVip ? (
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#FFD700] shadow-[0_0_10px_rgba(255,215,0,0.75)] z-20 pointer-events-none" />
-      ) : (
-        laneIndex === 0 && (
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-white z-20 pointer-events-none shadow-sm" />
-        )
-      )}
+      {/* Dynamic Runner Position along track */}
+      <div
+        className="absolute top-1/2 -translate-y-1/2 flex flex-col items-center justify-center transition-all duration-100 ease-linear pointer-events-none z-10"
+        style={{ left: `${currentX}px`, transform: 'translate(-50%, -50%)' }}
+      >
+        {/* Rider / Spectator Avatar Bubble */}
+        <div className="relative -mb-1 z-20">
+          <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-slate-900 border border-white/80 p-0.5 shadow-md flex items-center justify-center overflow-hidden">
+            <img
+              src={avatarSrc}
+              alt={horse.username}
+              className="w-full h-full rounded-full object-cover"
+              onError={(e) => {
+                (e.currentTarget as HTMLElement).style.display = 'none';
+              }}
+            />
+          </div>
+        </div>
 
-      {/* Finish Line Strip at Far Right (2420px - 100% position) - Clean Checker Pattern */}
-      <div className="absolute left-[2420px] top-0 bottom-0 w-10 finish-line-pattern border-l-[3px] border-[#f27d26] z-10 opacity-95 shadow-[0_0_15px_rgba(242,125,38,0.6)] pointer-events-none" />
-
-      {/* Horse Runner Component (EXACTLY ONE per lane) */}
-      <HorseRunner
-        horse={horse}
-        isRacing={isRacing}
-        isLobby={isLobby}
-        totalLanes={totalLanes}
-        onTap={onTap}
-      />
+        {/* Animated Horse Icon */}
+        <div
+          className={`relative flex items-center justify-center ${
+            isRacing ? 'animate-bounce' : ''
+          }`}
+          style={{
+            animationDuration: '0.4s',
+            filter: spriteStyle.filter,
+          }}
+        >
+          <span className="text-2xl sm:text-3xl leading-none">
+            {isVip ? '🐎' : '🐎'}
+          </span>
+        </div>
+      </div>
     </div>
   );
 };
-
