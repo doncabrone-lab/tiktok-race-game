@@ -7,7 +7,7 @@ import { UnlockCeremonyModal } from './components/UnlockCeremonyModal';
 import { StreamerControlDock } from './components/StreamerControlDock';
 import { HORSE_SKINS } from './skinsData';
 import { audioManager } from './utils/audioManager';
-import './App.css';
+
 
 export default function App() {
   const [socket, setSocket] = useState<Socket | null>(null);
