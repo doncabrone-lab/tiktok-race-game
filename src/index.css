@@ -66,19 +66,15 @@ body {
 /* Authentic Biomechanical Horse Gallop: Natural Running Stride (No Hopping) */
 @keyframes naturalHorseGallop {
   0% {
-    /* Stride Extension: Front legs reach forward, spine elongates, horizontal surge */
     transform: translate(3px, -1px) rotate(-2.5deg) scale(1.06, 0.96);
   }
   25% {
-    /* Front hoof impact: hooves touch down, body stabilizes kinetic energy */
     transform: translate(1px, 1px) rotate(-0.5deg) scale(1.01, 1.01);
   }
   50% {
-    /* Stride Gather: hooves sweep underneath torso, preparing rear spring */
     transform: translate(-2px, 0px) rotate(-1.5deg) scale(0.95, 1.03);
   }
   75% {
-    /* Hind-leg drive: rear hooves kick back against turf, thrusting forward */
     transform: translate(2.5px, -1.5px) rotate(-3deg) scale(1.07, 0.95);
   }
   100% {
@@ -104,7 +100,6 @@ body {
   }
 }
 
-/* Alert Natural Breathing at Starting Gate in Lobby */
 @keyframes naturalHorseLobbyIdle {
   0%, 100% {
     transform: translate(0px, 0px) rotate(0deg) scale(1, 1);
@@ -114,7 +109,6 @@ body {
   }
 }
 
-/* Dynamic Ground Contact Shadow - Expands on Impact, Shrinks in Mid-Air */
 @keyframes groundShadowGallop {
   0% {
     transform: translateX(-50%) scale(1.05, 0.85);
@@ -161,7 +155,6 @@ body {
   }
 }
 
-/* Ground Shadow Element */
 .horse-ground-shadow {
   position: absolute;
   bottom: 0px;
@@ -191,7 +184,6 @@ body {
   opacity: 0.7;
 }
 
-/* Rhythmic Turf Kick Dust */
 @keyframes turfDustKick {
   0% {
     opacity: 0.8;
@@ -217,34 +209,6 @@ body {
   border-radius: 50%;
   pointer-events: none;
   animation: turfDustKick 0.36s infinite linear;
-}
-
-/* Authentic Jockey Rider Stride Shock Absorption */
-@keyframes jockeyRidingStride {
-  0% {
-    transform: translate(0.4px, 0.4px) rotate(0.8deg);
-  }
-  25% {
-    transform: translate(0.8px, -0.4px) rotate(-0.8deg);
-  }
-  50% {
-    transform: translate(-0.4px, 0.6px) rotate(1.2deg);
-  }
-  75% {
-    transform: translate(0.6px, -0.6px) rotate(-0.4deg);
-  }
-  100% {
-    transform: translate(0.4px, 0.4px) rotate(0.8deg);
-  }
-}
-
-@keyframes jockeyLobbyIdle {
-  0%, 100% {
-    transform: translate(0px, 0px) rotate(0deg);
-  }
-  50% {
-    transform: translate(0.2px, -0.4px) rotate(-0.4deg);
-  }
 }
 
 .horse-runner-wrapper {
@@ -286,7 +250,6 @@ body {
   z-index: 2;
 }
 
-/* Avatar Circle & Fallback */
 .avatar-circle {
   width: 18px;
   height: 18px;
@@ -317,7 +280,6 @@ body {
   flex-shrink: 0;
 }
 
-/* Custom Fonts & Aesthetics */
 .font-display {
   font-family: 'Rajdhani', 'Chakra Petch', sans-serif;
 }
@@ -330,7 +292,6 @@ body {
   font-family: 'Cairo', 'Rajdhani', sans-serif;
 }
 
-/* Natural Equestrian Racetrack Surfaces: Deep Championship Dark Turf */
 .track-turf {
   background: linear-gradient(180deg, #07170a 0%, #0c2411 50%, #061409 100%);
   background-image: 
@@ -347,7 +308,6 @@ body {
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.55), inset 0 -2px 4px rgba(0, 0, 0, 0.55);
 }
 
-/* VIP Lane Golden Boundaries & Ambience */
 .vip-lane {
   border-bottom-color: #FFD700 !important;
   box-shadow: inset 0 0 16px rgba(255, 215, 0, 0.12), 0 1px 10px rgba(255, 215, 0, 0.55) !important;
@@ -366,148 +326,11 @@ body {
   pointer-events: none;
 }
 
-/* Biomechanical Articulated Gallop Cycles: True 4-Beat Horse Locomotion */
-@keyframes gallopNearForeLeg {
-  0% { transform: rotate(36deg); }
-  20% { transform: rotate(6deg); }
-  45% { transform: rotate(-26deg); }
-  70% { transform: rotate(-38deg); }
-  85% { transform: rotate(12deg); }
-  100% { transform: rotate(36deg); }
-}
-
-@keyframes gallopNearForeKnee {
-  0% { transform: rotate(-10deg); }
-  20% { transform: rotate(18deg); }
-  45% { transform: rotate(-15deg); }
-  70% { transform: rotate(58deg); }
-  85% { transform: rotate(10deg); }
-  100% { transform: rotate(-10deg); }
-}
-
-@keyframes gallopFarForeLeg {
-  0% { transform: rotate(-26deg); }
-  25% { transform: rotate(-38deg); }
-  45% { transform: rotate(12deg); }
-  65% { transform: rotate(36deg); }
-  85% { transform: rotate(6deg); }
-  100% { transform: rotate(-26deg); }
-}
-
-@keyframes gallopFarForeKnee {
-  0% { transform: rotate(-15deg); }
-  25% { transform: rotate(58deg); }
-  45% { transform: rotate(10deg); }
-  65% { transform: rotate(-10deg); }
-  85% { transform: rotate(18deg); }
-  100% { transform: rotate(-15deg); }
-}
-
-@keyframes gallopNearHindLeg {
-  0% { transform: rotate(28deg); }
-  20% { transform: rotate(12deg); }
-  45% { transform: rotate(-34deg); }
-  70% { transform: rotate(-52deg); }
-  85% { transform: rotate(-12deg); }
-  100% { transform: rotate(28deg); }
-}
-
-@keyframes gallopNearHindHock {
-  0% { transform: rotate(38deg); }
-  20% { transform: rotate(10deg); }
-  45% { transform: rotate(-25deg); }
-  70% { transform: rotate(-45deg); }
-  85% { transform: rotate(15deg); }
-  100% { transform: rotate(38deg); }
-}
-
-@keyframes gallopFarHindLeg {
-  0% { transform: rotate(-34deg); }
-  25% { transform: rotate(-52deg); }
-  45% { transform: rotate(-12deg); }
-  65% { transform: rotate(28deg); }
-  85% { transform: rotate(12deg); }
-  100% { transform: rotate(-34deg); }
-}
-
-@keyframes gallopFarHindHock {
-  0% { transform: rotate(-25deg); }
-  25% { transform: rotate(-45deg); }
-  45% { transform: rotate(15deg); }
-  65% { transform: rotate(38deg); }
-  85% { transform: rotate(10deg); }
-  100% { transform: rotate(-25deg); }
-}
-
-@keyframes gallopTorsoSurge {
-  0% { transform: translateY(-0.5px) rotate(-1.5deg); }
-  25% { transform: translateY(1.2px) rotate(0.8deg); }
-  50% { transform: translateY(0px) rotate(-0.5deg); }
-  75% { transform: translateY(-1.5px) rotate(-2deg); }
-  100% { transform: translateY(-0.5px) rotate(-1.5deg); }
-}
-
-@keyframes gallopHeadNod {
-  0% { transform: rotate(-1.5deg); }
-  25% { transform: rotate(2deg); }
-  50% { transform: rotate(-0.5deg); }
-  75% { transform: rotate(-2.5deg); }
-  100% { transform: rotate(-1.5deg); }
-}
-
-@keyframes gallopManeWave {
-  0%, 100% { transform: rotate(-3deg) scaleY(0.95); }
-  50% { transform: rotate(5deg) scaleY(1.08); }
-}
-
-@keyframes gallopTailStream {
-  0%, 100% { transform: rotate(-6deg) scaleX(0.96); }
-  50% { transform: rotate(14deg) scaleX(1.12); }
-}
-
-@keyframes gallopWingFlap {
-  0%, 100% { transform: rotate(-18deg) scaleY(0.9); }
-  50% { transform: rotate(22deg) scaleY(1.15); }
-}
-
-@keyframes idleBreathing {
-  0%, 100% { transform: translateY(0px) scale(1, 1); }
-  50% { transform: translateY(-0.8px) scale(1.008, 0.992); }
-}
-
-@keyframes idleTailSwish {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(8deg); }
-}
-
-@keyframes idleHeadNod {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(-1.5deg); }
-}
-
-/* Finish Line Checker Pattern */
 .finish-line-pattern {
   background: repeating-conic-gradient(#ffffff 0% 25%, #050505 0% 50%) 50% / 12px 12px;
   box-shadow: 0 0 20px rgba(242, 125, 38, 0.45), inset 0 0 8px rgba(0, 0, 0, 0.7);
 }
 
-/* Scanline / Holographic Overlays for Cyber Horses */
-@keyframes scanlineAnim {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100%); }
-}
-
-.cyber-scanlines::after {
-  content: " ";
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(236, 72, 153, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-  background-size: 100% 3px, 6px 100%;
-  pointer-events: none;
-  opacity: 0.6;
-}
-
-/* Nitro Flame & Sparkle Animations */
 @keyframes pulseGlow {
   0%, 100% { opacity: 0.8; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.06); }
@@ -518,7 +341,6 @@ body {
   filter: drop-shadow(0 0 16px #f27d26) drop-shadow(0 0 30px #ef4444);
 }
 
-/* Unique Tier Glow Filters */
 .tier-glow-1 { filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); }
 .tier-glow-2 { filter: drop-shadow(0 0 8px #06b6d4) drop-shadow(0 0 15px #3b82f6); }
 .tier-glow-3 { filter: drop-shadow(0 0 8px #10b981) drop-shadow(0 0 16px #059669); }
@@ -532,7 +354,7 @@ body {
 .tier-glow-11 { filter: drop-shadow(0 0 16px #f59e0b) drop-shadow(0 0 35px #d97706); }
 .tier-glow-12 { filter: drop-shadow(0 0 20px #ef4444) drop-shadow(0 0 45px #dc2626); }
 
-/* Prevent top-lane avatar overflow clipping */
+/* Fix voor avatar en paard overflow aan de bovenkant */
 .track-container,
 .race-track,
 .lanes-container,
@@ -541,8 +363,8 @@ body {
   overflow: visible !important;
 }
 
-/* Add a margin at the top of the track container so the top avatar is fully visible below the timer */
 .track-container,
 .race-track {
-  margin-top: 15px !important;
+  margin-top: 35px !important;
+  padding-top: 15px !important;
 }
