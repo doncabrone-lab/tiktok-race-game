@@ -29,7 +29,7 @@ export interface PlayerProfile {
 
 export const MAX_STAMINA_CAP = 100; // Base tier max stamina cap (100 STA)
 export const BASE_STAMINA_DRAIN = 5; // 5 STA per second during continuous galloping
-export const TAP_STAMINA_BONUS = 0.5; // 1 Tap = +0.5 STA added directly to horse pool (10 Taps = +5 STA)
+export const TAP_STAMINA_BONUS = 0.5; // 1 Tap = +1.0 STA added directly to horse pool (10 Taps = +10 STA)
 
 export interface RaceHorse {
   lane: number;
