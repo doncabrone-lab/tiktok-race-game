@@ -17,7 +17,6 @@ export const TrackLane: React.FC<TrackLaneProps> = ({
 }) => {
   const isVip = !!(horse.is_vip || horse.isVip);
 
-  // Oorspronkelijke VIP / Reguliere visual effects & sprites
   const getHorseSprite = () => {
     if (isVip) {
       return {
@@ -33,7 +32,6 @@ export const TrackLane: React.FC<TrackLaneProps> = ({
 
   const spriteStyle = getHorseSprite();
 
-  // Posititiebepaling over de 2500px baan
   const START_POS = 150;
   const FINISH_POS = 2440;
   const currentX = START_POS + (FINISH_POS - START_POS) * (Math.min(100, horse.distance || 0) / 100);
@@ -46,7 +44,7 @@ export const TrackLane: React.FC<TrackLaneProps> = ({
     <div
       onClick={onTap}
       style={{ flex: '1 1 0px', minHeight: 0 }}
-      className="w-full relative flex items-center border-b border-white/40 overflow-visible cursor-pointer select-none"
+      className="w-full relative flex items-center border-b border-white/30 overflow-visible cursor-pointer select-none"
     >
       {/* Dynamic Runner Container op de baan */}
       <div
@@ -67,7 +65,7 @@ export const TrackLane: React.FC<TrackLaneProps> = ({
           </div>
         </div>
 
-        {/* Oorspronkelijk Paard / Skin Render met Animaties & Glow */}
+        {/* Custom Paardenskin / Graphic Render */}
         <div
           className={`relative flex items-center justify-center ${
             isRacing ? 'animate-bounce' : ''
