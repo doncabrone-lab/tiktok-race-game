@@ -234,7 +234,7 @@ export class GameEngine {
       bets: [],
       activatedSpectators: {},
       currentRaceId: 'RACE_' + Date.now(),
-      hostBroadcasterId: 'TikTokBroadcaster',
+      hostBroadcasterId: 'patronizzle',
     };
 
     this.initLobbyHorses(6);
