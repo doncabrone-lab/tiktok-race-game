@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { GameState, ChatMessage } from './types.ts';
-import { TrackView } from './components/TrackView.tsx';
-import { WinnerCeremonyModal } from './components/WinnerCeremonyModal.tsx';
-import { UnlockCeremonyModal } from './components/UnlockCeremonyModal.tsx';
-import { StreamerControlDock } from './components/StreamerControlDock.tsx';
-import { HORSE_SKINS } from './skinsData.ts';
-import { audioManager } from './utils/audioManager.ts';
+import { GameState, ChatMessage } from './types';
+import { TrackView } from './components/TrackView';
+import { WinnerCeremonyModal } from './components/WinnerCeremonyModal';
+import { UnlockCeremonyModal } from './components/UnlockCeremonyModal';
+import { StreamerControlDock } from './components/StreamerControlDock';
+import { HORSE_SKINS } from './skinsData';
+import { audioManager } from './utils/audioManager';
 import './App.css';
 
 export default function App() {
@@ -146,7 +146,6 @@ export default function App() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
   useEffect(() => {
-    // Connect to WebSocket server on origin
     const newSocket = io({
       transports: ['websocket', 'polling'],
     });
@@ -174,8 +173,6 @@ export default function App() {
     };
   }, []);
 
-  // Synchronize horse galloping audio with RACING phase
-  // Plays for the exact duration of the race (1m, 2m, 3m, etc.) and stops automatically
   useEffect(() => {
     if (gameState.phase === 'RACING') {
       audioManager.playRaceSound();
@@ -229,7 +226,6 @@ export default function App() {
     socket.emit('host:set_match_mode', { mode, invitedUsers });
   };
 
-  // Support ?overlay=true URL parameter or persisted overlay mode preference
   const [isOverlayMode, setIsOverlayMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const searchParams = new URLSearchParams(window.location.search);
@@ -272,29 +268,24 @@ export default function App() {
 
   return (
     <div className={`w-screen h-[100dvh] overflow-hidden bg-[#030804] font-sans text-[#f3f4f6] relative touch-manipulation select-none ${laneTier}`}>
-      {/* Strict Bounding Box (Safe Zones): 140px top safe zone and 320px bottom safe zone */}
       <div
         id="game-container"
         className={`race-bounding-box game-container w-screen h-full flex-1 flex flex-col relative overflow-hidden bg-[#030804] ${laneTier}`}
       >
-        {/* 100% Dynamic Vertical Flex Tracks */}
         <TrackView
           gameState={gameState}
           onTapLane={(lane) => handleTap(lane)}
         />
 
-        {/* Winner Ceremony Modal */}
         {gameState.phase === 'WINNER_CEREMONY' && gameState.winnerInfo && (
           <WinnerCeremonyModal winnerInfo={gameState.winnerInfo} />
         )}
 
-        {/* Unlock Ceremony Modal (Triggers 5s after race finish if new tier unlocked) */}
         {gameState.phase === 'UNLOCK_CEREMONY' && gameState.unlockInfo && (
           <UnlockCeremonyModal unlockInfo={gameState.unlockInfo} />
         )}
       </div>
 
-      {/* Streamer / Broadcaster Control Dock */}
       <StreamerControlDock
         gameState={gameState}
         chatMessages={chatMessages}
