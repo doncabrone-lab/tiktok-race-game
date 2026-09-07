@@ -44,14 +44,14 @@ export const TrackLane: React.FC<TrackLaneProps> = ({
     <div
       onClick={onTap}
       style={{ flex: '1 1 0px', minHeight: 0 }}
-      className="w-full relative flex items-center border-b border-white/30 overflow-visible cursor-pointer select-none"
+      className={`w-full relative flex items-center border-b ${
+        isVip ? 'border-yellow-400/80 shadow-[0_0_10px_rgba(250,204,21,0.3)]' : 'border-white/20'
+      } overflow-visible cursor-pointer select-none`}
     >
-      {/* Dynamic Runner Container op de baan */}
       <div
         className="absolute top-1/2 flex flex-col items-center justify-center transition-all duration-100 ease-linear pointer-events-none z-10"
-        style={{ left: `${currentX}px`, transform: 'translate(-50%, -40%)' }}
+        style={{ left: `${currentX}px`, transform: 'translate(-50%, -50%)' }}
       >
-        {/* Speler Avatar Bubble op het paard */}
         <div className="relative -mb-1 z-20">
           <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-slate-900 border border-white/80 p-0.5 shadow-md flex items-center justify-center overflow-hidden">
             <img
@@ -65,7 +65,6 @@ export const TrackLane: React.FC<TrackLaneProps> = ({
           </div>
         </div>
 
-        {/* Custom Paardenskin / Graphic Render */}
         <div
           className={`relative flex items-center justify-center ${
             isRacing ? 'animate-bounce' : ''
