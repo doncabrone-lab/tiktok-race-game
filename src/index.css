@@ -63,96 +63,41 @@ body {
   user-select: none;
 }
 
-/* Authentic Biomechanical Horse Gallop: Natural Running Stride (No Hopping) */
 @keyframes naturalHorseGallop {
-  0% {
-    transform: translate(3px, -1px) rotate(-2.5deg) scale(1.06, 0.96);
-  }
-  25% {
-    transform: translate(1px, 1px) rotate(-0.5deg) scale(1.01, 1.01);
-  }
-  50% {
-    transform: translate(-2px, 0px) rotate(-1.5deg) scale(0.95, 1.03);
-  }
-  75% {
-    transform: translate(2.5px, -1.5px) rotate(-3deg) scale(1.07, 0.95);
-  }
-  100% {
-    transform: translate(3px, -1px) rotate(-2.5deg) scale(1.06, 0.96);
-  }
+  0% { transform: translate(3px, -1px) rotate(-2.5deg) scale(1.06, 0.96); }
+  25% { transform: translate(1px, 1px) rotate(-0.5deg) scale(1.01, 1.01); }
+  50% { transform: translate(-2px, 0px) rotate(-1.5deg) scale(0.95, 1.03); }
+  75% { transform: translate(2.5px, -1.5px) rotate(-3deg) scale(1.07, 0.95); }
+  100% { transform: translate(3px, -1px) rotate(-2.5deg) scale(1.06, 0.96); }
 }
 
 @keyframes naturalHorseGallopNitro {
-  0% {
-    transform: translate(4px, -1.5px) rotate(-4deg) scale(1.10, 0.93);
-  }
-  25% {
-    transform: translate(1.5px, 0.5px) rotate(-1.5deg) scale(1.02, 1.01);
-  }
-  50% {
-    transform: translate(-2.5px, 0px) rotate(-2deg) scale(0.93, 1.05);
-  }
-  75% {
-    transform: translate(3.5px, -2px) rotate(-4.5deg) scale(1.11, 0.92);
-  }
-  100% {
-    transform: translate(4px, -1.5px) rotate(-4deg) scale(1.10, 0.93);
-  }
+  0% { transform: translate(4px, -1.5px) rotate(-4deg) scale(1.10, 0.93); }
+  25% { transform: translate(1.5px, 0.5px) rotate(-1.5deg) scale(1.02, 1.01); }
+  50% { transform: translate(-2.5px, 0px) rotate(-2deg) scale(0.93, 1.05); }
+  75% { transform: translate(3.5px, -2px) rotate(-4.5deg) scale(1.11, 0.92); }
+  100% { transform: translate(4px, -1.5px) rotate(-4deg) scale(1.10, 0.93); }
 }
 
 @keyframes naturalHorseLobbyIdle {
-  0%, 100% {
-    transform: translate(0px, 0px) rotate(0deg) scale(1, 1);
-  }
-  50% {
-    transform: translate(0.5px, -1px) rotate(-0.5deg) scale(1.006, 0.994);
-  }
+  0%, 100% { transform: translate(0px, 0px) rotate(0deg) scale(1, 1); }
+  50% { transform: translate(0.5px, -1px) rotate(-0.5deg) scale(1.006, 0.994); }
 }
 
 @keyframes groundShadowGallop {
-  0% {
-    transform: translateX(-50%) scale(1.05, 0.85);
-    opacity: 0.5;
-  }
-  25% {
-    transform: translateX(-50%) scale(1.15, 1.1);
-    opacity: 0.8;
-  }
-  50% {
-    transform: translateX(-50%) scale(0.95, 0.9);
-    opacity: 0.6;
-  }
-  75% {
-    transform: translateX(-50%) scale(1.08, 0.85);
-    opacity: 0.55;
-  }
-  100% {
-    transform: translateX(-50%) scale(1.05, 0.85);
-    opacity: 0.5;
-  }
+  0% { transform: translateX(-50%) scale(1.05, 0.85); opacity: 0.5; }
+  25% { transform: translateX(-50%) scale(1.15, 1.1); opacity: 0.8; }
+  50% { transform: translateX(-50%) scale(0.95, 0.9); opacity: 0.6; }
+  75% { transform: translateX(-50%) scale(1.08, 0.85); opacity: 0.55; }
+  100% { transform: translateX(-50%) scale(1.05, 0.85); opacity: 0.5; }
 }
 
 @keyframes groundShadowNitro {
-  0% {
-    transform: translateX(-50%) scale(1.1, 0.8);
-    opacity: 0.55;
-  }
-  25% {
-    transform: translateX(-50%) scale(1.25, 1.15);
-    opacity: 0.9;
-  }
-  50% {
-    transform: translateX(-50%) scale(0.92, 0.9);
-    opacity: 0.65;
-  }
-  75% {
-    transform: translateX(-50%) scale(1.15, 0.8);
-    opacity: 0.6;
-  }
-  100% {
-    transform: translateX(-50%) scale(1.1, 0.8);
-    opacity: 0.55;
-  }
+  0% { transform: translateX(-50%) scale(1.1, 0.8); opacity: 0.55; }
+  25% { transform: translateX(-50%) scale(1.25, 1.15); opacity: 0.9; }
+  50% { transform: translateX(-50%) scale(0.92, 0.9); opacity: 0.65; }
+  75% { transform: translateX(-50%) scale(1.15, 0.8); opacity: 0.6; }
+  100% { transform: translateX(-50%) scale(1.1, 0.8); opacity: 0.55; }
 }
 
 .horse-ground-shadow {
@@ -176,27 +121,13 @@ body {
   animation: groundShadowNitro 0.20s infinite cubic-bezier(0.38, 0.04, 0.58, 0.96);
 }
 
-.horse-ground-shadow.lobby {
-  opacity: 0.6;
-}
-
-.horse-ground-shadow.finished {
-  opacity: 0.7;
-}
+.horse-ground-shadow.lobby { opacity: 0.6; }
+.horse-ground-shadow.finished { opacity: 0.7; }
 
 @keyframes turfDustKick {
-  0% {
-    opacity: 0.8;
-    transform: translate(0, 0) scale(0.4);
-  }
-  50% {
-    opacity: 0.5;
-    transform: translate(-12px, -3px) scale(0.85);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-24px, -6px) scale(1.2);
-  }
+  0% { opacity: 0.8; transform: translate(0, 0) scale(0.4); }
+  50% { opacity: 0.5; transform: translate(-12px, -3px) scale(0.85); }
+  100% { opacity: 0; transform: translate(-24px, -6px) scale(1.2); }
 }
 
 .turf-dust-puff {
@@ -280,17 +211,9 @@ body {
   flex-shrink: 0;
 }
 
-.font-display {
-  font-family: 'Rajdhani', 'Chakra Petch', sans-serif;
-}
-
-.font-mono {
-  font-family: 'JetBrains Mono', monospace, ui-monospace;
-}
-
-.font-arabic {
-  font-family: 'Cairo', 'Rajdhani', sans-serif;
-}
+.font-display { font-family: 'Rajdhani', 'Chakra Petch', sans-serif; }
+.font-mono { font-family: 'JetBrains Mono', monospace, ui-monospace; }
+.font-arabic { font-family: 'Cairo', 'Rajdhani', sans-serif; }
 
 .track-turf {
   background: linear-gradient(180deg, #07170a 0%, #0c2411 50%, #061409 100%);
@@ -316,9 +239,7 @@ body {
 .vip-lane::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   height: 2px;
   background-color: #FFD700 !important;
   box-shadow: 0 0 10px rgba(255, 215, 0, 0.75) !important;
@@ -353,18 +274,3 @@ body {
 .tier-glow-10 { filter: drop-shadow(0 0 14px #22d3ee) drop-shadow(0 0 30px #e0e7ff); }
 .tier-glow-11 { filter: drop-shadow(0 0 16px #f59e0b) drop-shadow(0 0 35px #d97706); }
 .tier-glow-12 { filter: drop-shadow(0 0 20px #ef4444) drop-shadow(0 0 45px #dc2626); }
-
-/* Fix voor avatar en paard overflow aan de bovenkant */
-.track-container,
-.race-track,
-.lanes-container,
-.lane,
-.track-lane {
-  overflow: visible !important;
-}
-
-.track-container,
-.race-track {
-  margin-top: 35px !important;
-  padding-top: 15px !important;
-}
