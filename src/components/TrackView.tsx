@@ -36,7 +36,6 @@ export const TrackView: React.FC<Props> = ({ gameState, onTapLane }) => {
 
   return (
     <div className={`race-bounding-box w-full h-full flex flex-col bg-[#030804] relative select-none ${tierClass}`}>
-      {/* Top Header Timer */}
       <header className="w-full h-[120px] shrink-0 pointer-events-none relative z-30 flex flex-col justify-end items-center pb-2">
         <div className="flex items-center justify-center pointer-events-none">
           {isLobby && (
@@ -96,12 +95,9 @@ export const TrackView: React.FC<Props> = ({ gameState, onTapLane }) => {
         </div>
       </header>
 
-      {/* Main Track Viewport */}
       <main className="race-lanes-vertical-container flex-1 w-full min-h-0 flex flex-col relative bg-[#040d06] overflow-hidden">
-        {/* Witte bovenlijn */}
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-white z-30 pointer-events-none shadow-sm" />
 
-        {/* Pinned Lane Info Badges (HUD) MET STAMINA BARS */}
         <div className="pinned-hud-container absolute left-1 sm:left-2 top-0 bottom-0 z-20 flex flex-col pointer-events-none">
           {gameState.horses.map((horse) => {
             const staminaPct = Math.max(0, Math.min(100, ((horse.stamina || 0) / (horse.maxStamina || 100)) * 100));
@@ -113,62 +109,102 @@ export const TrackView: React.FC<Props> = ({ gameState, onTapLane }) => {
               horse.avatarUrl ||
               `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(horse.username)}&backgroundColor=111215`;
 
+            const totalLanes = gameState.horses.length;
+            const isCompact = totalLanes >= 7;
+
             return (
               <div
                 key={`hud_${horse.lane}`}
                 style={{ flex: '1 1 0px', minHeight: 0 }}
                 className="w-full flex flex-col justify-center items-start overflow-visible py-0"
               >
-                <div className="flex items-center gap-1 bg-[#030905]/90 border border-white/30 rounded px-1.5 py-0.5 shadow-md">
-                  <span className="font-display font-black leading-none text-[9px] text-[#f27d26]">
-                    {horse.lane}
-                  </span>
-
-                  <img
-                    src={avatarSrc}
-                    alt={horse.username}
-                    className="w-3.5 h-3.5 rounded-full object-cover shrink-0 border border-white/70"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLElement).style.display = 'none';
-                    }}
-                  />
-
-                  <span className="text-[9px] max-w-[65px] font-display font-bold truncate leading-none text-slate-100">
-                    @{horse.username}
-                  </span>
-
-                  {isVip && (
-                    <span className="bg-amber-400 text-slate-950 font-black text-[6px] px-0.5 rounded leading-none shrink-0 font-display">
-                      VIP
+                {isCompact ? (
+                  <div
+                    className={`h-3.5 sm:h-4 ${
+                      totalLanes === 9 ? 'max-w-[135px]' : 'max-w-[150px]'
+                    } flex items-center gap-1 bg-[#030905]/95 rounded px-1 py-0 shadow ${
+                      isVip ? 'border border-amber-400/80' : 'border border-slate-700/80'
+                    }`}
+                  >
+                    <span className="font-display font-black leading-none text-[8px] text-[#f27d26]">
+                      {horse.lane}
                     </span>
-                  )}
 
-                  {/* STAMINA BAR HERSTELD */}
-                  <div className="flex items-center gap-0.5 shrink-0 pl-0.5">
-                    <div className="w-6 sm:w-8 h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-700/60 relative">
-                      <div
-                        className="h-full rounded-full transition-all duration-200 bg-emerald-500"
-                        style={{ width: `${staminaPct}%` }}
-                      />
+                    <img
+                      src={avatarSrc}
+                      alt={horse.username}
+                      className="w-3 h-3 rounded-full object-cover shrink-0 border border-white/70"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLElement).style.display = 'none';
+                      }}
+                    />
+
+                    <span className="text-[8px] max-w-[50px] font-display font-bold truncate leading-none text-slate-100">
+                      @{horse.username}
+                    </span>
+
+                    {isVip && (
+                      <span className="bg-amber-400 text-slate-950 font-black text-[5.5px] px-0.5 rounded leading-none shrink-0 font-display">
+                        VIP
+                      </span>
+                    )}
+
+                    <div className="flex items-center gap-0.5 shrink-0 pl-0.5">
+                      <div className="w-5 sm:w-6 h-1 bg-slate-900 rounded-full overflow-hidden border border-slate-700/60 relative">
+                        <div
+                          className="h-full rounded-full transition-all duration-200 bg-emerald-500"
+                          style={{ width: `${staminaPct}%` }}
+                        />
+                      </div>
+                      <span className="text-[6.5px] font-mono font-bold text-slate-200 leading-none">
+                        {Math.round(staminaPct)}%
+                      </span>
                     </div>
-                    <span className="text-[7px] font-mono font-bold text-slate-200 leading-none">
-                      {Math.round(staminaPct)}%
-                    </span>
+
+                    {supporterCount > 0 && (
+                      <div className="flex items-center gap-0.5 text-[6.5px] font-bold font-mono text-amber-300 shrink-0">
+                        <Users className="w-1.5 h-1.5 text-[#f27d26] shrink-0" />
+                        <span className="leading-none">{supporterCount}</span>
+                      </div>
+                    )}
                   </div>
+                ) : (
+                  <div className="flex flex-col gap-0.5 max-w-[160px]">
+                    <div className="flex items-center gap-1">
+                      <div className="w-3.5 h-3.5 text-[8.5px] font-black rounded bg-[#030905]/95 border border-slate-700/80 text-[#f27d26] flex items-center justify-center font-display shadow shrink-0">
+                        {horse.lane}
+                      </div>
 
-                  {supporterCount > 0 && (
-                    <div className="flex items-center gap-0.5 text-[7px] font-bold font-mono text-amber-300 shrink-0">
-                      <Users className="w-2 h-2 text-[#f27d26] shrink-0" />
-                      <span className="leading-none">{supporterCount}</span>
+                      <div
+                        className={`border ${
+                          isVip ? 'border-amber-400/80' : 'border-slate-700/80'
+                        } bg-[#030905]/95 px-1.5 py-0 h-3.5 max-w-[130px] rounded shadow flex items-center gap-1 transition-all`}
+                      >
+                        <img
+                          src={avatarSrc}
+                          alt={horse.username}
+                          className="w-3 h-3 rounded-full object-cover shrink-0 border border-white/70"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = 'none';
+                          }}
+                        />
+                        <span className="text-[8.5px] font-bold font-display truncate leading-none text-slate-100">
+                          @{horse.username}
+                        </span>
+                        {isVip && (
+                          <span className="bg-amber-400 text-slate-950 font-black text-[6px] px-0.5 py-0 rounded font-display uppercase leading-none shrink-0">
+                            VIP
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
 
-        {/* Horizontal Scrolling Track Container */}
         <div
           className="w-[2500px] h-full flex flex-col transition-transform duration-300 ease-out relative"
           style={{ transform: `translateX(-${targetOffset}px)` }}
@@ -195,10 +231,8 @@ export const TrackView: React.FC<Props> = ({ gameState, onTapLane }) => {
         </div>
       </main>
 
-      {/* Witte onderlijn */}
       <div className="w-full h-[1px] bg-white z-30 shrink-0 relative shadow-sm pointer-events-none" />
 
-      {/* Bottom Safe Zone */}
       <footer className="w-full h-[320px] shrink-0 pointer-events-none relative z-20 flex flex-col justify-start p-0 px-2 sm:px-3 bg-gradient-to-b from-[#030804] to-transparent">
         <div className="flex items-center justify-between w-full select-none font-semibold mt-1">
           <span className="bg-[#030804]/95 px-2 py-0.5 rounded border border-emerald-500/60 text-emerald-400 shadow text-[10px] sm:text-[11px] font-mono leading-tight tracking-wide">
