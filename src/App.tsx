@@ -7,6 +7,7 @@ import { UnlockCeremonyModal } from './components/UnlockCeremonyModal.tsx';
 import { StreamerControlDock } from './components/StreamerControlDock.tsx';
 import { HORSE_SKINS } from './skinsData.ts';
 import { audioManager } from './utils/audioManager.ts';
+import './App.css';
 
 export default function App() {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -228,34 +229,77 @@ export default function App() {
     socket.emit('host:set_match_mode', { mode, invitedUsers });
   };
 
+  // Support ?overlay=true URL parameter or persisted overlay mode preference
+  const [isOverlayMode, setIsOverlayMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      if (
+        searchParams.get('overlay') === 'true' ||
+        searchParams.get('overlay') === '1' ||
+        searchParams.has('overlay')
+      ) {
+        return true;
+      }
+      try {
+        const saved = localStorage.getItem('jockey_overlay_mode');
+        if (saved === 'true') return true;
+      } catch {
+        // ignore
+      }
+    }
+    return false;
+  });
+
+  const handleToggleOverlayMode = () => {
+    setIsOverlayMode((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('jockey_overlay_mode', String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
+
+  const activeLanesCount = gameState.horses.length;
+  const laneTier =
+    activeLanesCount <= 3
+      ? 'tier-large'
+      : activeLanesCount <= 6
+      ? 'tier-medium'
+      : 'tier-compact';
+
   return (
-    <div className="w-screen h-[100dvh] overflow-hidden bg-[#030804] font-sans text-[#f3f4f6] flex flex-col items-center justify-center relative touch-manipulation select-none">
-      {/* Strict 9:16 mobile container (max-width: 440px; height: 100dvh; margin: 0 auto; overflow: hidden;) */}
-      <div className="w-full h-full max-w-[440px] mx-auto flex flex-col relative overflow-hidden bg-[#030804]">
-        {/* Main game container: top header is 1.3cm, bottom header is 3cm, track fills 100% of the rest */}
-        <div id="game-container" className="game-container w-full h-full flex-1 flex flex-col relative overflow-hidden bg-[#030804] shadow-2xl border-x border-[#0a1e0d]">
-          {/* 100% Dynamic Vertical Flex Tracks */}
-          <TrackView
-            gameState={gameState}
-            onTapLane={(lane) => handleTap(lane)}
-          />
+    <div className={`w-screen h-[100dvh] overflow-hidden bg-[#030804] font-sans text-[#f3f4f6] relative touch-manipulation select-none ${laneTier}`}>
+      {/* Strict Bounding Box (Safe Zones): 140px top safe zone and 320px bottom safe zone */}
+      <div
+        id="game-container"
+        className={`race-bounding-box game-container w-screen h-full flex-1 flex flex-col relative overflow-hidden bg-[#030804] ${laneTier}`}
+      >
+        {/* 100% Dynamic Vertical Flex Tracks */}
+        <TrackView
+          gameState={gameState}
+          onTapLane={(lane) => handleTap(lane)}
+        />
 
-          {/* Winner Ceremony Modal */}
-          {gameState.phase === 'WINNER_CEREMONY' && gameState.winnerInfo && (
-            <WinnerCeremonyModal winnerInfo={gameState.winnerInfo} />
-          )}
+        {/* Winner Ceremony Modal */}
+        {gameState.phase === 'WINNER_CEREMONY' && gameState.winnerInfo && (
+          <WinnerCeremonyModal winnerInfo={gameState.winnerInfo} />
+        )}
 
-          {/* Unlock Ceremony Modal (Triggers 5s after race finish if new tier unlocked) */}
-          {gameState.phase === 'UNLOCK_CEREMONY' && gameState.unlockInfo && (
-            <UnlockCeremonyModal unlockInfo={gameState.unlockInfo} />
-          )}
-        </div>
+        {/* Unlock Ceremony Modal (Triggers 5s after race finish if new tier unlocked) */}
+        {gameState.phase === 'UNLOCK_CEREMONY' && gameState.unlockInfo && (
+          <UnlockCeremonyModal unlockInfo={gameState.unlockInfo} />
+        )}
       </div>
 
-      {/* Streamer / Broadcaster Control Dock (Floating across entire screen/secondary monitor) */}
+      {/* Streamer / Broadcaster Control Dock */}
       <StreamerControlDock
         gameState={gameState}
         chatMessages={chatMessages}
+        isOverlayMode={isOverlayMode}
+        onToggleOverlayMode={handleToggleOverlayMode}
         onSendMessage={handleSendMessage}
         onSendGift={handleSendGift}
         onTap={handleTap}
