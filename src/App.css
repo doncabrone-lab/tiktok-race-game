@@ -1,0 +1,82 @@
+/* TikTok LIVE Stream Overlay & Dynamic Lane Scaling Stylesheet */
+
+/* Universal Scrollbar Elimination */
+html,
+body,
+#root,
+#game-container,
+.game-container,
+.race-bounding-box,
+.race-lanes-vertical-container,
+.track-viewport,
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+*::-webkit-scrollbar,
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+/* Adaptive Game Container for TikTok LIVE & OBS (Square 1:1, 9:16, or Custom Fit) */
+.race-bounding-box {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: #030804;
+}
+
+/* 100% Dynamic Vertical Flex Tracks Container */
+.race-lanes-vertical-container {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  width: 100% !important;
+  position: relative !important;
+  flex: 1 1 0px !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+}
+
+/* Dynamic Lane Items (Evenly distributed across available vertical height) */
+.race-lane-item,
+.track-lane {
+  flex: 1 1 0px !important;
+  min-height: 0 !important;
+  width: 2500px !important;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  box-sizing: border-box;
+}
+
+/* Full Width 100vw Track Scrolling Surface */
+.track-viewport {
+  width: 100vw;
+  max-width: 100vw;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Pinned Left HUD Badges */
+.pinned-hud-container {
+  position: absolute;
+  left: 6px;
+  top: 0;
+  bottom: 0;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+

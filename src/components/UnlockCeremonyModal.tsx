@@ -25,7 +25,7 @@ export const UnlockCeremonyModal: React.FC<Props> = ({ unlockInfo }) => {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-lg flex items-center justify-center p-4 animate-in fade-in zoom-in-95 duration-400 font-sans">
+    <div className="absolute inset-0 z-50 bg-black/85 backdrop-blur-lg flex items-center justify-center p-4 animate-in fade-in zoom-in-95 duration-400 font-sans">
       <div className="bg-gradient-to-b from-[#181120] via-[#0f0c14] to-[#111215] border-2 border-purple-500/80 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative overflow-hidden flex flex-col items-center text-center">
         {/* Glowing Background Radial */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-600/20 via-transparent to-transparent pointer-events-none" />

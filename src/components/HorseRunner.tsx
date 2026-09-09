@@ -8,59 +8,56 @@ interface Props {
   isRacing: boolean;
   isLobby: boolean;
   totalLanes?: number;
+  laneHeight?: number;
+  horseScaleMultiplier?: number;
   onTap?: () => void;
 }
 
-export const HorseRunner: React.FC<Props> = ({ horse, isRacing, isLobby, totalLanes = 6, onTap }) => {
+export const HorseRunner: React.FC<Props> = ({
+  horse,
+  isRacing,
+  isLobby,
+  totalLanes = 6,
+  laneHeight = 0,
+  horseScaleMultiplier = 1.0,
+  onTap,
+}) => {
   const [imgError, setImgError] = useState(false);
   const isVip = !!(horse.is_vip || horse.isVip);
-  const isNineLanes = totalLanes >= 9;
-  const isEightLanes = totalLanes === 8;
-  const isSevenLanes = totalLanes === 7;
-  const isSixLanes = totalLanes === 6;
-  const isCompact = totalLanes >= 7;
 
-  // Scaled for comfortable clearance under the 1.3cm header bar across all 1-9 racer configurations
-  const horseImgWidth = isNineLanes
-    ? '55px'
-    : isEightLanes
-    ? '61px'
-    : isSevenLanes
-    ? '68px'
-    : isSixLanes
-    ? '76px'
-    : '86px';
+  // Proportional dynamic scaling: scales horse, mounted avatar, and turf shadow directly with lane height!
+  // This guarantees horses are crisp and prominent on OBS / TikTok Live streams (no longer tiny specks)
+  // while scaling down comfortably in smaller preview windows (no longer oversized).
+  const scale = React.useMemo(() => {
+    const scaleMult = horseScaleMultiplier || 1.0;
+    
+    // If laneHeight is known (from dynamic measurement), compute directly from lane height
+    if (laneHeight && laneHeight > 0) {
+      // 82% of lane height allows the horse to be bold and prominent with clean jockey clearance
+      const horseHeight = Math.max(26, Math.min(240, Math.round(laneHeight * 0.82 * scaleMult)));
+      const horseWidth = Math.round(horseHeight * 1.358);
+      const avatarSize = Math.max(16, Math.min(48, Math.round(horseHeight * 0.28)));
+      const shadowWidth = Math.round(horseWidth * 0.85);
+      const avatarTop = `${Math.max(2, Math.round(horseHeight * 0.08))}px`;
+      return { horseWidth, horseHeight, avatarSize, shadowWidth, avatarTop };
+    }
 
-  const avatarSize = isNineLanes
-    ? 15
-    : isEightLanes
-    ? 17
-    : isSevenLanes
-    ? 19
-    : isSixLanes
-    ? 22
-    : 24;
+    // Adaptive fallback based on totalLanes
+    const estimatedLaneHeight = Math.max(40, Math.min(140, 520 / Math.max(2, totalLanes)));
+    const horseHeight = Math.max(26, Math.round(estimatedLaneHeight * 0.82 * scaleMult));
+    const horseWidth = Math.round(horseHeight * 1.358);
+    const avatarSize = Math.max(16, Math.min(48, Math.round(horseHeight * 0.28)));
+    const shadowWidth = Math.round(horseWidth * 0.85);
+    const avatarTop = `${Math.max(2, Math.round(horseHeight * 0.08))}px`;
+    return { horseWidth, horseHeight, avatarSize, shadowWidth, avatarTop };
+  }, [laneHeight, totalLanes, horseScaleMultiplier]);
 
-  const shadowWidth = isNineLanes
-    ? '46px'
-    : isEightLanes
-    ? '52px'
-    : isSevenLanes
-    ? '58px'
-    : isSixLanes
-    ? '66px'
-    : '76px';
-
-  // Mounted rider avatar: for 8-9 racers, nestles onto the saddle with slight natural overlap so Lane 1 never clips under 1.3cm header
-  const avatarTop = isNineLanes
-    ? '18%'
-    : isEightLanes
-    ? '15%'
-    : isSevenLanes
-    ? '10%'
-    : isSixLanes
-    ? '3%'
-    : '-2%';
+  const horseImgWidth = `${scale.horseWidth}px`;
+  const horseImgHeight = `${scale.horseHeight}px`;
+  const avatarSize = scale.avatarSize;
+  const shadowWidth = `${scale.shadowWidth}px`;
+  const avatarTop = scale.avatarTop;
+  const tierClass = totalLanes <= 3 ? 'tier-large' : totalLanes <= 6 ? 'tier-medium' : 'tier-compact';
 
   // Determine ground shadow animation state
   let animClass = 'lobby';
@@ -125,8 +122,8 @@ export const HorseRunner: React.FC<Props> = ({ horse, isRacing, isLobby, totalLa
   return (
     <div
       onClick={onTap}
-      className={`absolute cursor-pointer z-10 select-none flex flex-col items-center will-change-transform ${
-        isCompact ? 'bottom-0' : 'bottom-0.5 sm:bottom-1'
+      className={`absolute cursor-pointer z-30 select-none flex flex-col items-center will-change-transform overflow-visible ${tierClass} ${
+        totalLanes <= 3 ? 'bottom-0.5' : 'bottom-0'
       }`}
       style={{
         left: 0,
@@ -134,7 +131,7 @@ export const HorseRunner: React.FC<Props> = ({ horse, isRacing, isLobby, totalLa
       }}
     >
       {/* Natural Horse Gallop Container with Ground Shadow, Aura & Mounted TikTok Avatar */}
-      <div className="relative flex items-end justify-center">
+      <div className="relative flex items-end justify-center overflow-visible" style={{ overflow: 'visible' }}>
         {/* Dynamic Turf Contact Shadow Underneath Horse */}
         <div
           className={`horse-ground-shadow ${animClass}`}
@@ -167,9 +164,10 @@ export const HorseRunner: React.FC<Props> = ({ horse, isRacing, isLobby, totalLa
 
         {/* User-Provided Authentic Horse Skin */}
         <div
-          className={`horse-runner-wrapper ${animClass} tier-glow-${horse.skin.level} ${
+          className={`horse-runner-wrapper ${animClass} tier-glow-${horse.skin.level} overflow-visible ${
             isRacing && horse.isNitro ? 'nitro-flame-glow' : ''
           }`}
+          style={{ overflow: 'visible' }}
         >
           {/* User's Original Horse Skin Image */}
           <img
@@ -179,6 +177,8 @@ export const HorseRunner: React.FC<Props> = ({ horse, isRacing, isLobby, totalLa
             className="horse-runner-img select-none pointer-events-none"
             style={{
               width: horseImgWidth,
+              height: horseImgHeight,
+              objectFit: 'contain',
             }}
             onError={(e) => {
               const target = e.currentTarget as HTMLImageElement;
@@ -190,12 +190,13 @@ export const HorseRunner: React.FC<Props> = ({ horse, isRacing, isLobby, totalLa
 
           {/* TikTok User Avatar floating on the horse's back - nestled directly on the saddle */}
           <div
-            className="absolute pointer-events-none z-20 -translate-x-1/2 -translate-y-1/2"
+            className="absolute pointer-events-none z-50 -translate-x-1/2 -translate-y-1/2 overflow-visible"
             style={{
               left: '46%', // Center of horse's back/saddle
               top: avatarTop,
               width: `${avatarSize}px`,
               height: `${avatarSize}px`,
+              overflow: 'visible',
             }}
           >
             <div

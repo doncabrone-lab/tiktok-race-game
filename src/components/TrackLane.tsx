@@ -8,6 +8,8 @@ interface Props {
   isLobby: boolean;
   laneIndex: number;
   totalLanes: number;
+  laneHeight?: number;
+  horseScaleMultiplier?: number;
   onTap: () => void;
 }
 
@@ -17,6 +19,8 @@ export const TrackLane: React.FC<Props> = ({
   isLobby,
   laneIndex,
   totalLanes,
+  laneHeight,
+  horseScaleMultiplier,
   onTap,
 }) => {
   // Alternate subtle clay track striping for depth
@@ -32,11 +36,11 @@ export const TrackLane: React.FC<Props> = ({
       className={`lane track-lane race-lane-item relative w-[2500px] flex-1 flex items-end border-b border-white/85 overflow-visible cursor-pointer select-none transition-colors ${
         isEven ? 'track-turf' : 'track-sand'
       } ${tierClass}`}
-      style={{ minHeight: 0 }}
+      style={{ minHeight: 0, zIndex: 10 + laneIndex }}
     >
       {/* Top Boundary Line: White for Lane 1 */}
       {laneIndex === 0 && (
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-white z-20 pointer-events-none shadow-sm" />
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-white z-0 pointer-events-none shadow-sm" />
       )}
 
       {/* Finish Line Strip at Far Right (2420px - 100% position) - Clean Checker Pattern */}
@@ -48,8 +52,11 @@ export const TrackLane: React.FC<Props> = ({
         isRacing={isRacing}
         isLobby={isLobby}
         totalLanes={totalLanes}
+        laneHeight={laneHeight}
+        horseScaleMultiplier={horseScaleMultiplier}
         onTap={onTap}
       />
     </div>
   );
 };
+

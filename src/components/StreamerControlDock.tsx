@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { GameState, ChatMessage } from '../types.ts';
+import { GameState, ChatMessage, TrackLayoutMode } from '../types.ts';
 import { HORSE_SKINS } from '../skinsData.ts';
 import { audioManager } from '../utils/audioManager.ts';
 import {
@@ -26,38 +26,109 @@ import {
 interface Props {
   gameState: GameState;
   chatMessages: ChatMessage[];
+  isOverlayMode?: boolean;
+  layoutMode?: TrackLayoutMode;
+  horseScaleMultiplier?: number;
+  onSetLayoutMode?: (mode: TrackLayoutMode) => void;
+  onSetHorseScaleMultiplier?: (multiplier: number) => void;
+  onToggleOverlayMode?: () => void;
   onSendMessage: (msg: string, username?: string, isBroadcaster?: boolean) => void;
   onSendGift: (giftName: string, count: number, lane?: number, username?: string) => void;
   onTap: (lane?: number) => void;
   onResetRace: () => void;
   onSetHostId: (hostId: string) => void;
   onSetDuration?: (duration: number | 'unlimited') => void;
+  onSetMeters?: (meters: number) => void;
   onSetLanes?: (lanes: number) => void;
   onTogglePauseLobby?: () => void;
   onSetMatchMode?: (mode: 'PUBLIC' | 'INVITE_ONLY', invitedUsers?: string[]) => void;
+  currentUsername?: string;
+  onSetCurrentUsername?: (username: string) => void;
 }
 
 export const StreamerControlDock: React.FC<Props> = ({
   gameState,
   chatMessages,
+  isOverlayMode = false,
+  layoutMode = 'SQUARE',
+  horseScaleMultiplier = 1.0,
+  onSetLayoutMode,
+  onSetHorseScaleMultiplier,
+  onToggleOverlayMode,
   onSendMessage,
   onSendGift,
   onTap,
   onResetRace,
   onSetHostId,
   onSetDuration,
+  onSetMeters,
   onSetLanes,
   onTogglePauseLobby,
   onSetMatchMode,
+  currentUsername = 'patronizzle',
+  onSetCurrentUsername,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'quick' | 'chat' | 'host' | 'gifts' | 'skins'>('quick');
   const [inputMsg, setInputMsg] = useState('');
-  const [testUsername, setTestUsername] = useState('TikTokGamer');
+  const [testUsername, setTestUsername] = useState(() => currentUsername || 'patronizzle');
   const [selectedLane, setSelectedLane] = useState<number>(1);
-  const [hostInput, setHostInput] = useState(gameState.hostBroadcasterId);
+  const [hostInput, setHostInput] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('broadcaster_tiktok_id');
+        if (saved) return saved;
+      } catch {}
+    }
+    return gameState.hostBroadcasterId || 'patronizzle';
+  });
+
+  const handleSaveHostId = (customVal?: string) => {
+    const raw = customVal !== undefined ? customVal : hostInput;
+    const clean = raw.replace(/^@/, '').trim();
+    if (!clean) return;
+    setHostInput(clean);
+    try {
+      localStorage.setItem('broadcaster_tiktok_id', clean);
+    } catch {}
+    onSetHostId(clean);
+  };
+
+  // Sync testUsername if prop changes
+  useEffect(() => {
+    if (currentUsername && currentUsername !== testUsername) {
+      setTestUsername(currentUsername);
+    }
+  }, [currentUsername]);
+
   const [tournamentUsers, setTournamentUsers] = useState('Speedy,DesertFox,TurboNova,ShadowRacer');
   const [timeModeInput, setTimeModeInput] = useState('1m');
+
+  // Hotkey listener: press 'H' or 'O' to toggle host dock or overlay mode
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
+        return;
+      }
+      if (e.key === 'h' || e.key === 'H') {
+        if (isOverlayMode && onToggleOverlayMode) {
+          onToggleOverlayMode();
+        } else {
+          setIsOpen((prev) => !prev);
+        }
+      }
+      if (e.key === 'o' || e.key === 'O') {
+        if (onToggleOverlayMode) {
+          onToggleOverlayMode();
+        }
+      }
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOverlayMode, onToggleOverlayMode]);
 
   // Audio Volume State synced with global audioManager
   const [volume, setVolume] = useState<number>(() => audioManager.getVolume());
@@ -176,6 +247,16 @@ export const StreamerControlDock: React.FC<Props> = ({
     onSendMessage(cmd, testUsername, testUsername === gameState.hostBroadcasterId);
   };
 
+  const handleMetersClick = (m: number) => {
+    if (onSetMeters) {
+      onSetMeters(m);
+    } else if (onSetDuration) {
+      onSetDuration(m);
+    } else {
+      onSendMessage(`!race ${m}m`, hostInput, true);
+    }
+  };
+
   const handleDurationClick = (dur: number | 'unlimited') => {
     if (onSetDuration) {
       onSetDuration(dur);
@@ -206,62 +287,94 @@ export const StreamerControlDock: React.FC<Props> = ({
 
   return (
     <>
-      {/* Floating Draggable Host Controls Button with direct inline Volume Indicator & Mute toggle */}
-      <div
-        style={{ left: `${btnPos.x}px`, top: `${btnPos.y}px` }}
-        className="fixed z-50 flex items-center shadow-2xl rounded-lg overflow-hidden border border-[#f27d26]/80 backdrop-blur-md bg-[#111317]/95 select-none touch-none shadow-black/80"
-      >
+      {/* If Overlay Mode is active, hide the host panel from stream */}
+      {isOverlayMode ? (
         <button
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={() => {
-            dragRef.current.isDragging = false;
-          }}
-          title="Host Controls (Drag anywhere on screen • Click to open/close dock)"
-          className={`h-7 px-2.5 flex items-center gap-1.5 transition-colors cursor-grab active:cursor-grabbing text-[11px] font-display font-extrabold ${
-            isOpen
-              ? 'bg-[#f27d26] text-slate-950 font-black'
-              : 'hover:bg-[#1a1d24] text-[#f27d26]'
-          }`}
+          onClick={onToggleOverlayMode}
+          title="Overlay View Active (Host dock hidden from stream). Click to show controls, or press 'H'"
+          className="fixed top-2 right-2 z-50 p-1.5 rounded-full bg-black/40 hover:bg-black/80 border border-white/10 hover:border-amber-400/50 text-white/30 hover:text-amber-400 transition-all backdrop-blur-sm"
         >
-          <GripVertical className="w-3.5 h-3.5 opacity-50 shrink-0" />
-          <Sliders className="w-3.5 h-3.5 shrink-0" />
-          <span>HOST</span>
+          <Sliders className="w-3.5 h-3.5" />
+          <span className="sr-only">Show Host Controls</span>
         </button>
-
-        {/* Inline Volume Control right on the Host Button */}
+      ) : (
+        /* Floating Draggable Host Controls Button with direct inline Volume Indicator & Mute toggle */
         <div
-          className="h-7 px-2 bg-[#0a0c0f] border-l border-[#2d313b] flex items-center gap-1.5 text-[10px] font-mono text-slate-200"
-          title="Galloping Sound Volume (Click speaker to mute/unmute • Use dock to adjust slider)"
+          style={{ left: `${btnPos.x}px`, top: `${btnPos.y}px` }}
+          className="fixed z-50 flex items-center shadow-2xl rounded-lg overflow-hidden border border-[#f27d26]/80 backdrop-blur-md bg-[#111317]/95 select-none touch-none shadow-black/80"
         >
           <button
-            onClick={handleToggleMute}
-            className="p-0.5 hover:text-[#f27d26] transition-colors active:scale-95"
-            title={isMuted ? 'Unmute Gallop Sound' : 'Mute Gallop Sound'}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={() => {
+              dragRef.current.isDragging = false;
+            }}
+            title="Host Controls (Drag anywhere on screen • Click to open/close dock • Press 'H')"
+            className={`h-7 px-2.5 flex items-center gap-1.5 transition-colors cursor-grab active:cursor-grabbing text-[11px] font-display font-extrabold ${
+              isOpen
+                ? 'bg-[#f27d26] text-slate-950 font-black'
+                : 'hover:bg-[#1a1d24] text-[#f27d26]'
+            }`}
           >
-            {isMuted || volume === 0 ? (
-              <VolumeX className="w-3.5 h-3.5 text-red-400" />
-            ) : volume < 0.5 ? (
-              <Volume1 className="w-3.5 h-3.5 text-amber-400" />
-            ) : (
-              <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
-            )}
+            <GripVertical className="w-3.5 h-3.5 opacity-50 shrink-0" />
+            <Sliders className="w-3.5 h-3.5 shrink-0" />
+            <span>HOST</span>
           </button>
-          <span className="font-bold min-w-[28px] text-right font-mono">
-            {isMuted ? 'OFF' : `${Math.round(volume * 100)}%`}
-          </span>
+
+          {/* Inline Volume Control right on the Host Button */}
+          <div
+            className="h-7 px-2 bg-[#0a0c0f] border-l border-[#2d313b] flex items-center gap-1.5 text-[10px] font-mono text-slate-200"
+            title="Galloping Sound Volume (Click speaker to mute/unmute • Use dock to adjust slider)"
+          >
+            <button
+              onClick={handleToggleMute}
+              className="p-0.5 hover:text-[#f27d26] transition-colors active:scale-95"
+              title={isMuted ? 'Unmute Gallop Sound' : 'Mute Gallop Sound'}
+            >
+              {isMuted || volume === 0 ? (
+                <VolumeX className="w-3.5 h-3.5 text-red-400" />
+              ) : volume < 0.5 ? (
+                <Volume1 className="w-3.5 h-3.5 text-amber-400" />
+              ) : (
+                <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+              )}
+            </button>
+            <span className="font-bold min-w-[28px] text-right font-mono">
+              {isMuted ? 'OFF' : `${Math.round(volume * 100)}%`}
+            </span>
+          </div>
+
+          {/* Quick Overlay Mode Toggle Button */}
+          {onToggleOverlayMode && (
+            <button
+              onClick={onToggleOverlayMode}
+              className="h-7 px-2 bg-[#0d0f13] border-l border-[#2d313b] hover:bg-[#1a1d24] text-slate-400 hover:text-amber-400 flex items-center gap-1 text-[10px] font-display transition-colors"
+              title="Enter Stream Overlay View (Hides host panel from stream)"
+            >
+              <EyeOff className="w-3 h-3" />
+              <span className="hidden sm:inline font-bold">OVERLAY</span>
+            </button>
+          )}
         </div>
-      </div>
+      )}
+
+      {/* Backdrop for easy click-away close */}
+      {isOpen && !isOverlayMode && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-[1px]"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
 
       {/* Modern Compact Host Overlay Panel */}
-      {isOpen && (
-        <div className="fixed inset-x-2 bottom-8 z-50 max-w-[440px] mx-auto bg-[#111215]/98 border border-[#2d313b] rounded-2xl shadow-2xl backdrop-blur-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-200 font-sans">
-          {/* Header */}
-          <div className="bg-[#0c0d10] border-b border-[#23262d] px-3 py-2 flex items-center justify-between">
+      {isOpen && !isOverlayMode && (
+        <div className="fixed inset-x-2 top-2 bottom-2 sm:inset-x-auto sm:right-4 sm:top-4 sm:bottom-4 sm:w-[460px] z-50 max-h-[calc(100dvh-16px)] mx-auto bg-[#111215]/98 border border-[#2d313b] rounded-2xl shadow-2xl backdrop-blur-2xl flex flex-col overflow-hidden animate-in fade-in duration-200 font-sans">
+          {/* Sticky Header */}
+          <div className="bg-[#0c0d10] border-b border-[#23262d] px-3 py-2 flex items-center justify-between shrink-0 sticky top-0 z-30">
             <div className="flex items-center gap-2 text-xs font-black text-slate-100 font-display">
               <Radio className="w-3.5 h-3.5 text-red-400 animate-pulse" />
-              <span>HOST & STREAMER DOCK</span>
+              <span>HOST &amp; STREAMER DOCK</span>
               {gameState.phase === 'RACING' && (
                 <span className="bg-red-600/90 text-white font-mono text-[9px] px-1.5 py-0.5 rounded animate-pulse">
                   RACING {Math.round(gameState.raceDuration)}s
@@ -273,20 +386,27 @@ export const StreamerControlDock: React.FC<Props> = ({
               <input
                 type="text"
                 value={testUsername}
-                onChange={(e) => setTestUsername(e.target.value)}
+                onChange={(e) => {
+                  setTestUsername(e.target.value);
+                  onSetCurrentUsername?.(e.target.value);
+                }}
                 placeholder="User"
-                className="bg-[#181a1f] border border-[#2d313b] text-slate-200 text-[10px] px-2 py-0.5 rounded font-mono w-24 focus:outline-none focus:border-[#f27d26]"
-                title="Current Simulator Username"
+                className="bg-[#181a1f] border border-[#2d313b] text-slate-200 text-[10px] px-2 py-0.5 rounded font-mono w-20 focus:outline-none focus:border-[#f27d26]"
+                title="Current Viewer / Racer Username"
               />
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-slate-400 hover:text-white text-xs font-bold px-1.5 py-0.5 rounded hover:bg-[#1f2229]"
+                className="flex items-center gap-1 bg-red-600/30 hover:bg-red-600/60 active:scale-95 text-red-200 hover:text-white border border-red-500/50 text-xs font-black px-2.5 py-1 rounded-lg transition-all"
+                title="Close Host Panel"
               >
-                ✕
+                <span className="text-sm leading-none font-black">✕</span>
+                <span className="font-display uppercase tracking-wider text-[10.5px]">CLOSE</span>
               </button>
             </div>
           </div>
 
+          {/* Scrollable Body Content */}
+          <div className="flex-1 overflow-y-auto min-h-0 overscroll-contain">
           {/* Primary Host Quick Control Bar (Always visible at top of dock) */}
           <div className="p-3 bg-[#0e1014] border-b border-[#23262d] flex flex-col gap-2.5">
             {/* Dedicated Galloping Sound Volume Control */}
@@ -351,58 +471,34 @@ export const StreamerControlDock: React.FC<Props> = ({
               </div>
             </div>
 
-            {/* Race Duration Quick Buttons: [ 1m ] [ 2m ] [ 3m ] [ Unlimited / Finish Line ] */}
+            {/* Race Distance Selection: [ 500m ] [ 1000m ] [ 1500m ] - Small & Clear */}
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between text-[10px] font-bold text-slate-300 font-display uppercase tracking-wider">
                 <span className="flex items-center gap-1 text-[#f27d26]">
                   <Clock className="w-3 h-3" />
-                  RACE DURATION
+                  RACE DISTANCE
                 </span>
                 <span className="text-slate-400 font-mono text-[9px]">
-                  Configured: {isUnlimited ? 'Unlimited' : `${Math.round((gameState.totalRaceTime || 60) / 60)}m (${gameState.totalRaceTime || 60}s)`}
+                  Selected: {gameState.targetMeters || 500}m
                 </span>
               </div>
-              <div className="grid grid-cols-4 gap-1.5">
-                <button
-                  onClick={() => handleDurationClick(60)}
-                  className={`py-1 rounded text-xs font-bold font-mono transition-all border active:scale-95 ${
-                    is1m
-                      ? 'bg-indigo-600 text-white border-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.5)] font-black'
-                      : 'bg-[#181a1f] hover:bg-[#23262d] text-slate-300 border-[#2d313b]'
-                  }`}
-                >
-                  1m
-                </button>
-                <button
-                  onClick={() => handleDurationClick(120)}
-                  className={`py-1 rounded text-xs font-bold font-mono transition-all border active:scale-95 ${
-                    is2m
-                      ? 'bg-indigo-600 text-white border-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.5)] font-black'
-                      : 'bg-[#181a1f] hover:bg-[#23262d] text-slate-300 border-[#2d313b]'
-                  }`}
-                >
-                  2m
-                </button>
-                <button
-                  onClick={() => handleDurationClick(180)}
-                  className={`py-1 rounded text-xs font-bold font-mono transition-all border active:scale-95 ${
-                    is3m
-                      ? 'bg-indigo-600 text-white border-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.5)] font-black'
-                      : 'bg-[#181a1f] hover:bg-[#23262d] text-slate-300 border-[#2d313b]'
-                  }`}
-                >
-                  3m
-                </button>
-                <button
-                  onClick={() => handleDurationClick('unlimited')}
-                  className={`py-1 rounded text-xs font-bold font-mono transition-all border active:scale-95 ${
-                    isUnlimited
-                      ? 'bg-[#f27d26] text-slate-950 border-amber-300 shadow-[0_0_8px_rgba(242,125,38,0.5)] font-black'
-                      : 'bg-[#181a1f] hover:bg-[#23262d] text-slate-300 border-[#2d313b]'
-                  }`}
-                >
-                  Unlimited
-                </button>
+              <div className="grid grid-cols-3 gap-1.5">
+                {[500, 1000, 1500].map((meters) => {
+                  const isSelected = (gameState.targetMeters || 500) === meters;
+                  return (
+                    <button
+                      key={meters}
+                      onClick={() => handleMetersClick(meters)}
+                      className={`py-1 px-2 rounded text-xs font-bold font-mono transition-all border active:scale-95 ${
+                        isSelected
+                          ? 'bg-blue-600 text-white border-blue-400 shadow-[0_0_8px_rgba(37,99,235,0.5)] font-black'
+                          : 'bg-[#181a1f] hover:bg-[#23262d] text-slate-300 border-[#2d313b]'
+                      }`}
+                    >
+                      {meters}m
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -510,6 +606,104 @@ export const StreamerControlDock: React.FC<Props> = ({
               )}
             </div>
 
+            {/* Game Layout & OBS Sizing Section */}
+            <div className="flex flex-col gap-1.5 border-t border-[#23262d] pt-2">
+              <div className="flex items-center justify-between text-[10px] font-bold text-slate-300 font-display uppercase tracking-wider">
+                <span className="flex items-center gap-1 text-amber-400">
+                  <span>📐</span> GAME LAYOUT &amp; OBS SIZING
+                </span>
+                <span className="text-slate-300 font-mono text-[9px] font-bold">
+                  {layoutMode === 'SQUARE' ? '1:1 SQUARE BOX' : layoutMode === 'VERTICAL' ? '9:16 VERTICAL' : 'FIT CANVAS'}
+                </span>
+              </div>
+
+              {/* Layout Mode Selector */}
+              <div className="grid grid-cols-3 gap-1.5">
+                <button
+                  onClick={() => onSetLayoutMode && onSetLayoutMode('SQUARE')}
+                  className={`py-1 rounded text-[11px] font-bold font-display transition-all border ${
+                    layoutMode === 'SQUARE'
+                      ? 'bg-amber-600 text-slate-950 border-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.5)] font-black'
+                      : 'bg-[#181a1f] hover:bg-[#23262d] text-slate-300 border-[#2d313b]'
+                  }`}
+                  title="Square 1:1 Box (fits TikTok Live guest panel / multi-guest box / 1080x1080 OBS source)"
+                >
+                  ⏹️ Square (1:1)
+                </button>
+                <button
+                  onClick={() => onSetLayoutMode && onSetLayoutMode('VERTICAL')}
+                  className={`py-1 rounded text-[11px] font-bold font-display transition-all border ${
+                    layoutMode === 'VERTICAL'
+                      ? 'bg-amber-600 text-slate-950 border-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.5)] font-black'
+                      : 'bg-[#181a1f] hover:bg-[#23262d] text-slate-300 border-[#2d313b]'
+                  }`}
+                  title="9:16 Mobile fullscreen format with safe zones"
+                >
+                  📱 9:16 Mobile
+                </button>
+                <button
+                  onClick={() => onSetLayoutMode && onSetLayoutMode('FIT')}
+                  className={`py-1 rounded text-[11px] font-bold font-display transition-all border ${
+                    layoutMode === 'FIT'
+                      ? 'bg-amber-600 text-slate-950 border-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.5)] font-black'
+                      : 'bg-[#181a1f] hover:bg-[#23262d] text-slate-300 border-[#2d313b]'
+                  }`}
+                  title="Fit 100% of the window or OBS canvas"
+                >
+                  🔲 Fit Window
+                </button>
+              </div>
+
+              {/* Horse & Avatar Size Adjustment */}
+              <div className="flex flex-col gap-1 bg-[#08090c] p-2 rounded-lg border border-[#20232a] mt-0.5">
+                <div className="flex items-center justify-between text-[10px] font-bold text-slate-300 font-display">
+                  <span className="text-slate-300">HORSE &amp; AVATAR SCALE</span>
+                  <span className="text-amber-400 font-mono text-[10px] font-bold">
+                    {Math.round((horseScaleMultiplier || 1.0) * 100)}% {horseScaleMultiplier === 1.0 ? '(Auto-Fit)' : ''}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="range"
+                    min="70"
+                    max="140"
+                    step="5"
+                    value={Math.round((horseScaleMultiplier || 1.0) * 100)}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      onSetHorseScaleMultiplier && onSetHorseScaleMultiplier(val / 100);
+                    }}
+                    className="flex-1 accent-[#f27d26] h-1.5 bg-[#1f2229] rounded-lg cursor-pointer"
+                  />
+                  <button
+                    onClick={() => onSetHorseScaleMultiplier && onSetHorseScaleMultiplier(1.0)}
+                    className="px-2 py-0.5 rounded text-[9.5px] font-bold font-mono bg-[#181a1f] hover:bg-[#23262d] border border-[#2d313b] text-slate-300 active:scale-95"
+                    title="Reset to 100% Auto-fit scale"
+                  >
+                    Auto
+                  </button>
+                </div>
+                <div className="grid grid-cols-4 gap-1 pt-0.5">
+                  {[0.85, 1.0, 1.15, 1.3].map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => onSetHorseScaleMultiplier && onSetHorseScaleMultiplier(s)}
+                      className={`py-0.5 rounded text-[9px] font-mono font-bold border transition-colors ${
+                        Math.abs((horseScaleMultiplier || 1.0) - s) < 0.03
+                          ? 'bg-[#f27d26] text-slate-950 border-amber-300 font-black'
+                          : 'bg-[#14161a] hover:bg-[#1f2229] text-slate-400 border-[#23262d]'
+                      }`}
+                    >
+                      {Math.round(s * 100)}%{s === 1.0 ? ' (Auto)' : ''}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[9px] text-slate-400 font-sans leading-tight mt-0.5">
+                  Scales horses and avatars proportionally to lane height so they never get cut off on OBS or mobile.
+                </p>
+              </div>
+            </div>
+
             {/* Quick Actions Row */}
             <div className="flex items-center gap-1.5 pt-1">
               <button
@@ -550,16 +744,10 @@ export const StreamerControlDock: React.FC<Props> = ({
 
               <button
                 onClick={() => onTap(selectedLane)}
-                className="bg-amber-600/30 hover:bg-amber-600/50 border border-amber-500/50 text-amber-300 text-xs font-bold py-1 px-2 rounded font-display"
+                className="bg-amber-600/30 hover:bg-amber-600/50 border border-amber-500/50 text-amber-300 text-xs font-bold py-1 px-3 rounded font-display flex items-center gap-1 active:scale-95"
+                title="Micro-Tap Screen (+2 Stamina)"
               >
-                👆 Tap
-              </button>
-
-              <button
-                onClick={() => onSendGift('Rose', 1, selectedLane, testUsername)}
-                className="bg-rose-600/30 hover:bg-rose-600/50 border border-rose-500/50 text-rose-300 text-xs font-bold py-1 px-2 rounded font-display"
-              >
-                🌹 Rose
+                👆 Tap (+2 STA)
               </button>
             </div>
           </div>
@@ -637,12 +825,19 @@ export const StreamerControlDock: React.FC<Props> = ({
                   <input
                     type="text"
                     value={hostInput}
-                    onChange={(e) => setHostInput(e.target.value)}
+                    onChange={(e) => {
+                      setHostInput(e.target.value);
+                      try {
+                        localStorage.setItem('broadcaster_tiktok_id', e.target.value);
+                      } catch {}
+                    }}
+                    onBlur={() => handleSaveHostId()}
+                    placeholder="patronizzle"
                     className="flex-1 bg-[#07080a] border border-[#23262d] rounded px-2 py-1 text-slate-200 font-mono text-xs focus:outline-none focus:border-cyan-400"
                   />
                   <button
-                    onClick={() => onSetHostId(hostInput)}
-                    className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-3 py-1 rounded text-xs font-display"
+                    onClick={() => handleSaveHostId()}
+                    className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-3 py-1 rounded text-xs font-display cursor-pointer"
                   >
                     Save
                   </button>
@@ -654,19 +849,13 @@ export const StreamerControlDock: React.FC<Props> = ({
           {/* Tab 1: Chat & Commands Simulator */}
           {activeTab === 'chat' && (
             <div className="p-3 flex flex-col gap-2.5 max-h-80 overflow-y-auto">
-              {/* Quick Bilingual Command Chips */}
+              {/* Quick Command Chips */}
               <div className="flex flex-wrap gap-1">
                 <button
                   onClick={() => handleQuickCommand('!race')}
                   className="bg-[#0b1b12] hover:bg-[#10291b] border border-emerald-700/80 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded font-mono"
                 >
                   !race (Join)
-                </button>
-                <button
-                  onClick={() => handleQuickCommand('!سباق')}
-                  className="bg-[#0b1b12] hover:bg-[#10291b] border border-emerald-700/80 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded font-arabic"
-                >
-                  !سباق
                 </button>
                 <button
                   onClick={() => handleQuickCommand(`!bet ${selectedLane}`)}
@@ -687,22 +876,10 @@ export const StreamerControlDock: React.FC<Props> = ({
                   !points
                 </button>
                 <button
-                  onClick={() => handleQuickCommand('!نقاط')}
-                  className="bg-[#0a1828] hover:bg-[#0f243b] border border-blue-700/80 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded font-arabic"
-                >
-                  !نقاط
-                </button>
-                <button
                   onClick={() => handleQuickCommand('!vip')}
                   className="bg-[#241706] hover:bg-[#38240a] border border-amber-500/80 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded font-mono shadow-[0_0_8px_rgba(255,215,0,0.3)]"
                 >
                   !vip
-                </button>
-                <button
-                  onClick={() => handleQuickCommand('!خاص')}
-                  className="bg-[#241706] hover:bg-[#38240a] border border-amber-500/80 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded font-arabic shadow-[0_0_8px_rgba(255,215,0,0.3)]"
-                >
-                  !خاص
                 </button>
               </div>
 
@@ -760,10 +937,10 @@ export const StreamerControlDock: React.FC<Props> = ({
               {/* Micro-Tap Trigger */}
               <button
                 onClick={() => onTap(selectedLane)}
-                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-display font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40"
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-display font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 active:scale-95"
               >
                 <Zap className="w-4 h-4 fill-emerald-200" />
-                <span>Micro-Tap Screen (+0.5 Stamina to Lane {selectedLane})</span>
+                <span>Micro-Tap Screen (+2 Stamina to Lane {selectedLane})</span>
               </button>
 
               {/* Live Gifts Preset Buttons matching Balanced Math Tiers */}
@@ -844,12 +1021,19 @@ export const StreamerControlDock: React.FC<Props> = ({
                   <input
                     type="text"
                     value={hostInput}
-                    onChange={(e) => setHostInput(e.target.value)}
+                    onChange={(e) => {
+                      setHostInput(e.target.value);
+                      try {
+                        localStorage.setItem('broadcaster_tiktok_id', e.target.value);
+                      } catch {}
+                    }}
+                    onBlur={() => handleSaveHostId()}
+                    placeholder="patronizzle"
                     className="flex-1 bg-[#07080a] border border-[#23262d] rounded px-2 py-1 text-slate-200 font-mono text-xs focus:outline-none focus:border-cyan-400"
                   />
                   <button
-                    onClick={() => onSetHostId(hostInput)}
-                    className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-3 py-1 rounded text-xs font-display"
+                    onClick={() => handleSaveHostId()}
+                    className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-3 py-1 rounded text-xs font-display cursor-pointer"
                   >
                     Save
                   </button>
@@ -876,23 +1060,23 @@ export const StreamerControlDock: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* Time Mode: !race 1m, !race 2m, !race 3m */}
+              {/* Distance Mode: 500m, 1000m, 1500m */}
               <div className="flex flex-col gap-1 border-t border-[#23262d] pt-2">
-                <span className="font-bold text-slate-300">Time Mode Countdown (!race 1m, !race 2m, !race 3m):</span>
-                <div className="flex gap-1.5">
-                  <input
-                    type="text"
-                    value={timeModeInput}
-                    onChange={(e) => setTimeModeInput(e.target.value)}
-                    placeholder="1m, 2m, 3m"
-                    className="flex-1 bg-[#07080a] border border-[#23262d] rounded px-2 py-1 text-slate-200 font-mono text-xs focus:outline-none focus:border-indigo-400"
-                  />
-                  <button
-                    onClick={() => onSendMessage(`!race ${timeModeInput}`, hostInput, true)}
-                    className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1 rounded text-xs font-display"
-                  >
-                    Launch Time Mode
-                  </button>
+                <span className="font-bold text-slate-300">Race Distance (!race 500m, 1000m, 1500m):</span>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {[500, 1000, 1500].map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => handleMetersClick(m)}
+                      className={`py-1 px-2 rounded text-xs font-bold font-mono transition-all border active:scale-95 ${
+                        (gameState.targetMeters || 500) === m
+                          ? 'bg-blue-600 text-white border-blue-400 shadow-[0_0_8px_rgba(37,99,235,0.5)] font-black'
+                          : 'bg-[#181a1f] hover:bg-[#23262d] text-slate-300 border-[#2d313b]'
+                      }`}
+                    >
+                      {m}m
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -941,6 +1125,31 @@ export const StreamerControlDock: React.FC<Props> = ({
               </div>
             </div>
           )}
+          </div>
+
+          {/* Sticky Bottom Bar with big Close button and Overlay Mode */}
+          <div className="bg-[#0a0c0f] border-t border-[#23262d] px-3 py-2 flex items-center justify-between shrink-0 sticky bottom-0 z-30">
+            {onToggleOverlayMode && (
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  onToggleOverlayMode();
+                }}
+                className="flex items-center gap-1.5 bg-[#181a1f] hover:bg-[#252830] text-amber-300 hover:text-amber-200 text-[10.5px] font-bold px-2.5 py-1.5 rounded-lg border border-[#2d313b] active:scale-95"
+                title="Hide host controls for clean stream overlay (Viewers won't see controls)"
+              >
+                <EyeOff className="w-3.5 h-3.5" />
+                <span>Overlay Mode</span>
+              </button>
+            )}
+            <button
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-1.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 active:scale-95 text-white text-xs font-black font-display px-4 py-1.5 rounded-lg shadow-lg shadow-red-950/40 ml-auto transition-all"
+            >
+              <span className="text-sm leading-none font-black">✕</span>
+              <span>CLOSE PANEL</span>
+            </button>
+          </div>
         </div>
       )}
     </>

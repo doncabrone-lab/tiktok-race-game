@@ -23,8 +23,6 @@ import http from 'http';
 import path from 'path';
 import { Server } from 'socket.io';
 import { createServer as createViteServer } from 'vite';
-// TOEVOEGING 1: Importeer de TikTok connector
-import { WebcastPushConnection } from 'tiktok-live-connector';
 import { GameEngine, calculateGiftBoost, MAX_STAMINA_CAP, BASE_STAMINA_DRAIN, TAP_STAMINA_BONUS } from './server/gameEngine.ts';
 import { getUser, getLeaderboard, setVipStatus, updateUserCoins, SKIN_TIERS } from './server/db.ts';
 
@@ -37,9 +35,7 @@ async function startServer() {
     cors: { origin: '*' },
   });
 
-  // Haal de poort en gebruikersnaam op uit de omgeving (Render)
-  const PORT = process.env.PORT || 3000;
-  const TIKTOK_USERNAME = process.env.TIKTOK_USERNAME || 'patronizzle';
+  const PORT = 3000;
 
   app.use(express.json());
 
@@ -48,7 +44,6 @@ async function startServer() {
     res.json({
       status: 'ok',
       version: '2.5.0',
-      connectedTo: TIKTOK_USERNAME,
       staminaCap: MAX_STAMINA_CAP,
       staminaDrain: BASE_STAMINA_DRAIN,
       tapBonus: TAP_STAMINA_BONUS,
@@ -100,30 +95,6 @@ async function startServer() {
   // Initialize Game Logic Engine (manages 10Hz tick, continuous 5 STA/s drain, and horse state)
   const gameEngine = new GameEngine(io);
 
-  // TOEVOEGING 2: Functie om verzoek van TikTok of chat af te handelen
-  const processChatMessage = async (username, message, isBroadcaster = false) => {
-    if (!message) return;
-    const cleanUser = username.replace(/^@/, '').trim();
-    const cleanMessage = String(message).trim();
-
-    if (cleanMessage.toLowerCase().startsWith('!wins')) {
-      const parts = cleanMessage.split(/\s+/);
-      const targetUser = parts[1] ? parts[1].replace(/^@/, '').trim() : cleanUser;
-      const user = await getUser(targetUser);
-      const wins = user.wins_count ?? user.wins ?? 0;
-      gameEngine.broadcastChatMessage({
-        id: 'wins_' + Date.now(),
-        username: targetUser,
-        message: `@${targetUser} | ${wins} Wins`,
-        type: 'chat',
-        timestamp: Date.now(),
-      });
-      return;
-    }
-
-    await gameEngine.handleCommand(cleanUser, cleanMessage, isBroadcaster);
-  };
-
   // Socket.io Connection & Event Handlers
   io.on('connection', (socket) => {
     // Send initial game state immediately
@@ -132,7 +103,26 @@ async function startServer() {
     // Lightweight chat message & command handler
     const handleChat = async (data) => {
       if (!data || !data.message) return;
-      await processChatMessage(data.username || 'Spectator', data.message, !!data.isBroadcaster);
+      const cleanUser = (data.username || 'Spectator').replace(/^@/, '').trim();
+      const message = String(data.message).trim();
+
+      // Lightweight !wins command handler: chat response only "@username | X Wins"
+      if (message.toLowerCase().startsWith('!wins')) {
+        const parts = message.split(/\s+/);
+        const targetUser = parts[1] ? parts[1].replace(/^@/, '').trim() : cleanUser;
+        const user = await getUser(targetUser);
+        const wins = user.wins_count ?? user.wins ?? 0;
+        gameEngine.broadcastChatMessage({
+          id: 'wins_' + Date.now(),
+          username: targetUser,
+          message: `@${targetUser} | ${wins} Wins`,
+          type: 'chat',
+          timestamp: Date.now(),
+        });
+        return;
+      }
+
+      await gameEngine.handleCommand(cleanUser, message, !!data.isBroadcaster);
     };
 
     socket.on('chat:send', handleChat);
@@ -182,63 +172,6 @@ async function startServer() {
       }
     });
   });
-
-  // ==========================================
-  // TOEVOEGING 3: NATIVE TIKTOK LIVE CONNECTOR
-  // ==========================================
-  function connectToTikTok(targetUsername) {
-    console.log(`[TikTok] Connecting to Live Room of @${targetUsername}...`);
-    
-    const tiktokLiveConnection = new WebcastPushConnection(targetUsername, {
-      processInitialData: false,
-      enableExtendedGiftInfo: true,
-      requestPollingIntervalMs: 2000,
-    });
-
-    tiktokLiveConnection.connect().then(state => {
-      console.log(`[TikTok] Successfully connected to Room ID: ${state.roomId}`);
-    }).catch(err => {
-      console.error(`[TikTok] Failed to connect to @${targetUsername}:`, err.message || err);
-      setTimeout(() => connectToTikTok(targetUsername), 30000);
-    });
-
-    // Luister naar Chatberichten uit TikTok LIVE
-    tiktokLiveConnection.on('chat', data => {
-      const isBroadcaster = data.uniqueId.toLowerCase() === targetUsername.toLowerCase();
-      processChatMessage(data.uniqueId, data.comment, isBroadcaster);
-    });
-
-    // Luister naar Taps / Likes op de TikTok stream
-    tiktokLiveConnection.on('like', data => {
-      const tapCount = data.likeCount || 1;
-      for (let i = 0; i < Math.min(tapCount, 10); i++) {
-        gameEngine.handleTap(data.uniqueId);
-      }
-    });
-
-    // Luister naar Gifts / Cadeaus uit TikTok LIVE
-    tiktokLiveConnection.on('gift', data => {
-      if (data.giftType === 1 && data.repeatEnd === false) return;
-      gameEngine.handleGift(
-        data.uniqueId,
-        data.giftName || 'Rose',
-        data.repeatCount || 1
-      );
-    });
-
-    tiktokLiveConnection.on('streamEnd', () => {
-      console.log(`[TikTok] Stream for @${targetUsername} ended.`);
-      setTimeout(() => connectToTikTok(targetUsername), 30000);
-    });
-
-    tiktokLiveConnection.on('disconnected', () => {
-      console.log(`[TikTok] Disconnected from @${targetUsername}. Retrying in 10s...`);
-      setTimeout(() => connectToTikTok(targetUsername), 10000);
-    });
-  }
-
-  // Start de TikTok luisteraar op de achtergrond van Render
-  connectToTikTok(TIKTOK_USERNAME);
 
   // Vite middleware for development vs static production serving
   if (process.env.NODE_ENV !== 'production') {

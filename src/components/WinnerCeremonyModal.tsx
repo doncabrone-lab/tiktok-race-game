@@ -110,7 +110,7 @@ export const WinnerCeremonyModal: React.FC<Props> = ({ winnerInfo }) => {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-300 font-sans">
+    <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-300 font-sans">
       <div className="bg-gradient-to-b from-[#111215] via-[#0b0c0e] to-[#111215] border-2 border-[#f27d26]/80 rounded-2xl max-w-md w-full p-4 sm:p-5 shadow-2xl relative overflow-hidden flex flex-col items-center">
         {/* Ambient Top Glow */}
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#f27d26] via-yellow-300 to-[#f27d26]" />
