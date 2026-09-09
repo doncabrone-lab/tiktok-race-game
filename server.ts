@@ -2,7 +2,7 @@ import express from 'express';
 import http from 'http';
 import path from 'path';
 import { Server } from 'socket.io';
-import { TikTokLiveConnection } from 'tiktok-live-connector';
+import { TikTokLiveConnection, SignConfig } from 'tiktok-live-connector';
 import { createServer as createViteServer } from 'vite';
 
 import { GameEngine } from './server/gameEngine.ts';
@@ -13,6 +13,11 @@ import {
   updateUserCoins,
   SKIN_TIERS,
 } from './server/db.ts';
+
+// Configure optional sign API key if provided via environment variables
+if (process.env.EULER_API_KEY) {
+  SignConfig.apiKey = process.env.EULER_API_KEY;
+}
 
 async function startServer() {
   const app = express();
@@ -506,8 +511,6 @@ async function startServer() {
 
       const repeatEnd = data?.repeatEnd;
 
-      // For streak gifts, only process the
-      // final event.
       if (
         giftType === 1 &&
         repeatEnd === false
