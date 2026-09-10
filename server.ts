@@ -361,6 +361,31 @@ async function startServer() {
 
     console.log(`[TikTok] Connecting to Live Room of @${TIKTOK_USERNAME} via TikTool...`);
 
+    // Diagnostic check: verify the same API key works against TikTool's
+    // REST API before attempting the WebSocket connection. This lets us
+    // distinguish an API-key/tier problem from a WebSocket/SDK problem.
+    void (async () => {
+      try {
+        const diagnosticUrl =
+          `https://api.tik.tools/webcast/check_alive?apiKey=${encodeURIComponent(
+            process.env.TIKTOOL_API_KEY!
+          )}&unique_id=${encodeURIComponent(TIKTOK_USERNAME)}`;
+
+        const response = await fetch(diagnosticUrl);
+        const body = await response.text();
+
+        console.log(
+          `[TikTok] REST DIAGNOSTIC: HTTP ${response.status} ${response.statusText}`
+        );
+        console.log(`[TikTok] REST DIAGNOSTIC BODY: ${body.slice(0, 2000)}`);
+      } catch (err: any) {
+        console.error(
+          '[TikTok] REST DIAGNOSTIC FAILED:',
+          err?.message || err
+        );
+      }
+    })();
+
     tiktokConnected = false;
     tiktokRoomId = null;
 
