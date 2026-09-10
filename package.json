@@ -24,7 +24,7 @@
     "socket.io-client": "^4.8.3",
     "sql.js": "^1.14.2",
     "vite": "^6.2.3",
-    "tiktok-live-api": "1.4.9"
+    "@tiktool/live": "2.12.1"
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.9.0",
