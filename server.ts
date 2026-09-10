@@ -14,7 +14,6 @@ import {
   SKIN_TIERS,
 } from './server/db.ts';
 
-
 async function startServer() {
   const app = express();
   const server = http.createServer(app);
@@ -340,8 +339,6 @@ async function startServer() {
   // TIKTOK LIVE CONNECTOR
   // ==========================================
 
-  const TIKTOOL_API_KEY = (process.env.TIKTOOL_API_KEY || '').trim();
-
   const scheduleTikTokReconnect = (delayMs: number) => {
     if (tiktokReconnectTimer) return;
 
@@ -357,72 +354,62 @@ async function startServer() {
       return;
     }
 
-    if (!TIKTOOL_API_KEY) {
-      console.error(
-        '[TikTok] No TIKTOOL_API_KEY configured. Create a free API key at tik.tools and add it to Render Environment.'
-      );
+    if (!process.env.TIKTOOL_API_KEY) {
+      console.error('[TikTok] No TIKTOOL_API_KEY configured in Render Environment Variables.');
       return;
     }
 
-    console.log(
-      `[TikTok] Connecting to @${TIKTOK_USERNAME} through TikTool...`
-    );
+    console.log(`[TikTok] Connecting to Live Room of @${TIKTOK_USERNAME} via TikTool...`);
 
     tiktokConnected = false;
     tiktokRoomId = null;
 
     const connection = new TikTokLive(TIKTOK_USERNAME, {
-      apiKey: TIKTOOL_API_KEY,
-      autoReconnect: true,
-      maxReconnectAttempts: 50,
+      apiKey: process.env.TIKTOOL_API_KEY,
+      autoReconnect: false,
+      maxReconnectAttempts: 0,
     });
 
     // ------------------------------------------
     // CONNECTED
     // ------------------------------------------
-    connection.on('connected', (data: any) => {
-      tiktokConnected = true;
-      tiktokRoomId = String(
-        data?.roomId || data?.room_id || ''
-      );
 
-      console.log(
-        `[TikTok] CONNECTED @${TIKTOK_USERNAME} room=${tiktokRoomId || 'unknown'}`
-      );
+    connection.on('connected', () => {
+      tiktokConnected = true;
+      console.log(`[TikTok] CONNECTED @${TIKTOK_USERNAME}`);
+    });
+
+    connection.on('roomInfo', (data: any) => {
+      tiktokRoomId = data?.roomId ? String(data.roomId) : null;
+      console.log(`[TikTok] ROOM INFO @${TIKTOK_USERNAME} room=${tiktokRoomId || 'unknown'}`);
+    });
+
+    connection.on('status', (data: any) => {
+      console.log('[TikTok] STATUS:', data?.status || data?.message || data);
     });
 
     // ------------------------------------------
     // CHAT
     // ------------------------------------------
+
     connection.on('chat', (data: any) => {
       const username = String(
         data?.user?.uniqueId ||
-          data?.user?.unique_id ||
           data?.uniqueId ||
-          data?.unique_id ||
           data?.user?.nickname ||
           data?.nickname ||
           'Spectator'
       ).replace(/^@/, '');
 
-      const message = String(
-        data?.comment || data?.message || ''
-      ).trim();
-
+      const message = String(data?.comment || '').trim();
       if (!message) return;
 
       const isBroadcaster =
         username.toLowerCase() === TIKTOK_USERNAME.toLowerCase();
 
-      console.log(
-        `[TikTok] CHAT @${username}: ${message}`
-      );
+      console.log(`[TikTok] CHAT @${username}: ${message}`);
 
-      void processChatMessage(
-        username,
-        message,
-        isBroadcaster
-      ).catch((err: any) => {
+      void processChatMessage(username, message, isBroadcaster).catch((err: any) => {
         console.error(
           `[TikTok] CHAT PROCESS ERROR @${username}:`,
           err?.message || err
@@ -433,27 +420,20 @@ async function startServer() {
     // ------------------------------------------
     // LIKES
     // ------------------------------------------
+
     connection.on('like', (data: any) => {
       const username = String(
         data?.user?.uniqueId ||
-          data?.user?.unique_id ||
           data?.uniqueId ||
-          data?.unique_id ||
           data?.user?.nickname ||
           data?.nickname ||
           'Spectator'
       ).replace(/^@/, '');
 
-      const likeCount = Math.max(
-        1,
-        Number(data?.likeCount ?? data?.like_count ?? 1)
-      );
-
+      const likeCount = Math.max(1, Number(data?.likeCount || 1));
       const tapCount = Math.min(likeCount, 10);
 
-      console.log(
-        `[TikTok] LIKE @${username} x${likeCount} -> ${tapCount} taps`
-      );
+      console.log(`[TikTok] LIKE @${username} x${likeCount} -> ${tapCount} taps`);
 
       for (let i = 0; i < tapCount; i++) {
         gameEngine.handleTap(username);
@@ -463,45 +443,27 @@ async function startServer() {
     // ------------------------------------------
     // GIFTS
     // ------------------------------------------
+
     connection.on('gift', (data: any) => {
       const username = String(
         data?.user?.uniqueId ||
-          data?.user?.unique_id ||
           data?.uniqueId ||
-          data?.unique_id ||
           data?.user?.nickname ||
           data?.nickname ||
           'Spectator'
       ).replace(/^@/, '');
 
-      const giftName = String(
-        data?.giftName ||
-          data?.gift_name ||
-          data?.giftDetails?.giftName ||
-          data?.gift?.name ||
-          'Rose'
-      );
+      const giftName = String(data?.giftName || 'Rose');
+      const repeatCount = Math.max(1, Number(data?.repeatCount || 1));
+      const giftType = Number(data?.giftType ?? 0);
+      const repeatEnd = data?.repeatEnd;
 
-      const repeatCount = Math.max(
-        1,
-        Number(
-          data?.repeatCount ??
-            data?.repeat_count ??
-            data?.count ??
-            1
-        )
-      );
+      if (giftType === 1 && repeatEnd === false) {
+        return;
+      }
 
-      const diamondCount = Number(
-        data?.diamondCount ??
-          data?.diamond_count ??
-          data?.giftDetails?.diamondCount ??
-          data?.gift?.diamondCount ??
-          0
-      );
-
-      const coinValue =
-        diamondCount > 0 ? diamondCount * 2 : 1;
+      const diamondCount = Number(data?.diamondCount || 0);
+      const coinValue = diamondCount > 0 ? diamondCount * 2 : 1;
 
       console.log(
         `[TikTok] GIFT @${username}: ${giftName} x${repeatCount} diamonds=${diamondCount}`
@@ -523,29 +485,30 @@ async function startServer() {
     // ------------------------------------------
     // ERROR
     // ------------------------------------------
-    connection.on('error', (err: any) => {
-      tiktokConnected = false;
+
+    connection.on('error', (data: any) => {
       console.error(
         '[TikTok] CONNECTION ERROR:',
-        err?.message || err
+        data?.message || data?.error || data
       );
     });
 
     // ------------------------------------------
     // DISCONNECT
     // ------------------------------------------
-    connection.on('disconnected', () => {
+
+    connection.on('disconnected', (data: any) => {
       tiktokConnected = false;
       tiktokRoomId = null;
 
       console.log(
-        `[TikTok] Disconnected from @${TIKTOK_USERNAME}. TikTool auto-reconnect is enabled.`
+        `[TikTok] Disconnected from @${TIKTOK_USERNAME}. Retrying in 10s...`,
+        data?.reason || ''
       );
+
+      scheduleTikTokReconnect(10000);
     });
 
-    // ------------------------------------------
-    // START
-    // ------------------------------------------
     connection
       .connect()
       .catch((err: any) => {
@@ -563,7 +526,6 @@ async function startServer() {
 
   connectToTikTok();
 
-  // ==========================================
   // VITE / PRODUCTION
   // ==========================================
 
