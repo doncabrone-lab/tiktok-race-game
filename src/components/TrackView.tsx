@@ -1,3 +1,4 @@
+```tsx
 import React from 'react';
 import { GameState, TrackLayoutMode } from '../types.ts';
 import { TrackLane } from './TrackLane.tsx';
@@ -402,14 +403,21 @@ export const TrackView: React.FC<Props> = ({
         {/* Command bar placed tightly right beneath the uninterrupted bottom line */}
         <div className="flex items-center justify-between w-full select-none font-semibold mt-0.5">
           <span className="bg-[#030804]/95 px-2 py-0.5 rounded border border-emerald-500/60 text-emerald-400 shadow text-[9.5px] sm:text-[10.5px] font-mono leading-tight tracking-wide">
-            !race • !bet 1-{gameState.horses.length}
+            !race • !pick 1-{gameState.horses.length}
           </span>
+
+          <span className="bg-[#030804]/95 px-2 py-0.5 rounded border border-amber-500/60 text-amber-300 shadow text-[9.5px] sm:text-[10.5px] font-mono leading-tight tracking-wide">
+            FREE TO PLAY
+          </span>
+
           <span className="bg-[#030804]/95 px-2 py-0.5 rounded border border-amber-500/60 text-amber-300 shadow text-[9.5px] sm:text-[10.5px] font-mono leading-tight tracking-wide">
             Gift = Nitro Boost
           </span>
         </div>
+
         {!isSquareOrFit && <div className="flex-1 w-full" />}
       </footer>
     </div>
   );
 };
+```
