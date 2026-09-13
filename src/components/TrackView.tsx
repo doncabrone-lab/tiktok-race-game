@@ -42,6 +42,7 @@ export const TrackView: React.FC<Props> = ({
         if (entry.contentRect.height > 0) {
           setTrackContainerHeight(entry.contentRect.height);
         }
+
         if (entry.contentRect.width > 0) {
           setViewportWidth(entry.contentRect.width);
         }
@@ -56,38 +57,81 @@ export const TrackView: React.FC<Props> = ({
   }, []);
 
   const totalCount = gameState.horses.length || 6;
-  const laneHeight = trackContainerHeight > 0 ? trackContainerHeight / totalCount : 0;
+  const laneHeight =
+    trackContainerHeight > 0
+      ? trackContainerHeight / totalCount
+      : 0;
 
   // Calculate dynamic camera offset following the leading horse along the 2500px track
   const START_POS = 150;
   const FINISH_POS = 2440;
-  const maxDistance = Math.max(0, ...gameState.horses.map((h) => h.distance || 0));
-  const leadX = START_POS + (FINISH_POS - START_POS) * (Math.min(100, maxDistance) / 100);
+
+  const maxDistance = Math.max(
+    0,
+    ...gameState.horses.map((h) => h.distance || 0)
+  );
+
+  const leadX =
+    START_POS +
+    (FINISH_POS - START_POS) *
+      (Math.min(100, maxDistance) / 100);
 
   // Dynamic maximum camera offset so the finish line (at 2420px) is framed perfectly at the right edge
-  const maxCameraOffset = Math.max(0, 2460 - viewportWidth);
+  const maxCameraOffset = Math.max(
+    0,
+    2460 - viewportWidth
+  );
 
   let targetOffset = 0;
+
   if (isRacing) {
     // Keep camera tracking the lead horse so it's always centered at ~35% of the visible viewport
-    const leadTarget = Math.max(0, leadX - viewportWidth * 0.35);
-    const maxLeadOffset = Math.max(0, leadX - 60);
-    targetOffset = Math.min(maxCameraOffset, Math.min(leadTarget, maxLeadOffset));
-  } else if (gameState.phase === 'WINNER_CEREMONY' || gameState.phase === 'UNLOCK_CEREMONY') {
-    targetOffset = maxCameraOffset; // Pin camera at finish line with clean space
+    const leadTarget = Math.max(
+      0,
+      leadX - viewportWidth * 0.35
+    );
+
+    const maxLeadOffset = Math.max(
+      0,
+      leadX - 60
+    );
+
+    targetOffset = Math.min(
+      maxCameraOffset,
+      Math.min(leadTarget, maxLeadOffset)
+    );
+  } else if (
+    gameState.phase === 'WINNER_CEREMONY' ||
+    gameState.phase === 'UNLOCK_CEREMONY'
+  ) {
+    targetOffset = maxCameraOffset;
   } else {
-    targetOffset = 0; // Starting gates visible, finish line hidden
+    targetOffset = 0;
   }
 
   const isLarge = totalCount <= 3;
-  const isMedium = totalCount >= 4 && totalCount <= 6;
-  const tierClass = isLarge ? 'tier-large' : isMedium ? 'tier-medium' : 'tier-compact';
+  const isMedium =
+    totalCount >= 4 && totalCount <= 6;
+
+  const tierClass = isLarge
+    ? 'tier-large'
+    : isMedium
+      ? 'tier-medium'
+      : 'tier-compact';
 
   return (
     <div
       onClick={(e) => {
         const target = e.target as HTMLElement;
-        if (target.closest('button, input, textarea, a, select')) return;
+
+        if (
+          target.closest(
+            'button, input, textarea, a, select'
+          )
+        ) {
+          return;
+        }
+
         onTapScreen?.();
       }}
       className={`race-bounding-box w-full h-full flex flex-col bg-[#030804] relative select-none cursor-pointer ${tierClass}`}
@@ -95,7 +139,9 @@ export const TrackView: React.FC<Props> = ({
       {/* Header: Compact in Square/Fit modes (~34px) to maximize race height; Mobile safe zone in Vertical mode */}
       <header
         className={`w-full ${
-          isSquareOrFit ? 'h-[34px] px-2' : 'h-[110px] px-3'
+          isSquareOrFit
+            ? 'h-[34px] px-2'
+            : 'h-[110px] px-3'
         } shrink-0 pointer-events-none relative z-10 flex items-end justify-center pb-2 transition-all`}
       >
         {/* Center: Phase / Countdown HUD positioned right above Lane 1, perfectly centered */}
@@ -109,9 +155,18 @@ export const TrackView: React.FC<Props> = ({
               } px-2.5 sm:px-3 rounded-md shadow-lg backdrop-blur-md`}
             >
               <Timer className="w-3.5 h-3.5 text-[#f27d26]" />
+
               <span className="font-extrabold text-[11px] sm:text-xs font-display tracking-wide leading-none">
-                {gameState.isLobbyPaused ? 'LOBBY PAUSED' : `LOBBY: ${Math.max(0, Math.ceil(gameState.lobbyTimeLeft))}s`}
+                {gameState.isLobbyPaused
+                  ? 'LOBBY PAUSED'
+                  : `LOBBY: ${Math.max(
+                      0,
+                      Math.ceil(
+                        gameState.lobbyTimeLeft
+                      )
+                    )}s`}
               </span>
+
               {gameState.matchMode === 'INVITE_ONLY' && (
                 <span className="bg-purple-600/90 text-purple-100 text-[8px] font-black px-1 py-0.5 rounded leading-none ml-1">
                   INVITE
@@ -123,8 +178,13 @@ export const TrackView: React.FC<Props> = ({
           {isCountdown && (
             <div className="h-6 sm:h-7 flex items-center gap-1.5 bg-red-950/90 border border-red-500/70 text-red-200 px-2.5 sm:px-3 rounded-md shadow-lg">
               <Timer className="w-3.5 h-3.5 text-red-400 animate-pulse" />
+
               <span className="font-black text-[11px] sm:text-xs font-display tracking-wider leading-none">
-                STARTING IN {Math.ceil(gameState.countdownTimeLeft)}...
+                STARTING IN{' '}
+                {Math.ceil(
+                  gameState.countdownTimeLeft
+                )}
+                ...
               </span>
             </div>
           )}
@@ -138,8 +198,23 @@ export const TrackView: React.FC<Props> = ({
                 <span className="text-[10px] sm:text-xs text-blue-200 uppercase font-sans font-bold tracking-wider">
                   DISTANCE:
                 </span>
+
                 <span className="leading-none tracking-wide font-extrabold">
-                  {Math.max(0, Math.round(gameState.remainingMeters ?? ((1 - Math.min(100, maxDistance) / 100) * (gameState.targetMeters || 500))))}m
+                  {Math.max(
+                    0,
+                    Math.round(
+                      gameState.remainingMeters ??
+                        ((1 -
+                          Math.min(
+                            100,
+                            maxDistance
+                          ) /
+                            100) *
+                          (gameState.targetMeters ||
+                            500))
+                    )
+                  )}
+                  m
                 </span>
               </div>
             </div>
@@ -148,7 +223,10 @@ export const TrackView: React.FC<Props> = ({
           {gameState.phase === 'WINNER_CEREMONY' && (
             <div className="h-6 sm:h-7 flex items-center gap-1.5 bg-amber-950/80 border border-amber-400/70 text-amber-300 px-2.5 sm:px-3 rounded-md font-display text-[11px] sm:text-xs font-black shadow-lg">
               <Trophy className="w-3.5 h-3.5 text-[#f27d26]" />
-              <span className="leading-none">VICTORY CEREMONY</span>
+
+              <span className="leading-none">
+                VICTORY CEREMONY
+              </span>
             </div>
           )}
         </div>
@@ -179,22 +257,48 @@ export const TrackView: React.FC<Props> = ({
         {/* Pinned Lane Info & TikTok Username HUD Badges on Visible Screen */}
         <div className="pinned-hud-container absolute left-1 sm:left-2 top-0 bottom-0 z-20 flex flex-col pointer-events-none">
           {gameState.horses.map((horse) => {
-            const staminaPct = Math.max(0, Math.min(100, ((horse.stamina || 0) / (horse.maxStamina || 100)) * 100));
-            const supporterBets = (gameState.bets || []).filter((b) => b.lane === horse.lane);
-            const supporterCount = supporterBets.length;
-            const isVip = !!(horse.is_vip || horse.isVip);
+            const staminaPct = Math.max(
+              0,
+              Math.min(
+                100,
+                ((horse.stamina || 0) /
+                  (horse.maxStamina || 100)) *
+                  100
+              )
+            );
+
+            const supporterBets = (
+              gameState.bets || []
+            ).filter(
+              (b) => b.lane === horse.lane
+            );
+
+            const supporterCount =
+              supporterBets.length;
+
+            const isVip = !!(
+              horse.is_vip || horse.isVip
+            );
 
             const avatarSrc =
               horse.avatarUrl ||
-              `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(horse.username)}&backgroundColor=111215`;
+              `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(
+                horse.username
+              )}&backgroundColor=111215`;
 
             // Choose layout density based on actual measured laneHeight or lane count
-            const isTight = laneHeight > 0 ? laneHeight < 72 : totalCount >= 5;
+            const isTight =
+              laneHeight > 0
+                ? laneHeight < 72
+                : totalCount >= 5;
 
             return (
               <div
                 key={`hud_${horse.lane}`}
-                style={{ flex: '1 1 0px', minHeight: 0 }}
+                style={{
+                  flex: '1 1 0px',
+                  minHeight: 0,
+                }}
                 className="w-full flex flex-col justify-center items-start overflow-visible py-0"
               >
                 {isTight ? (
@@ -222,19 +326,27 @@ export const TrackView: React.FC<Props> = ({
                           src={avatarSrc}
                           alt={horse.username}
                           className={`w-2.5 h-2.5 rounded-full object-cover shrink-0 ${
-                            isVip ? 'border border-[#FFD700]' : 'border border-white/70'
+                            isVip
+                              ? 'border border-[#FFD700]'
+                              : 'border border-white/70'
                           }`}
                           onError={(e) => {
-                            (e.currentTarget as HTMLElement).style.display = 'none';
+                            (
+                              e.currentTarget as HTMLElement
+                            ).style.display = 'none';
                           }}
                         />
+
                         <span
                           className={`text-[8px] font-bold font-display truncate leading-none ${
-                            isVip ? 'text-[#FFD700] font-black' : 'text-slate-100'
+                            isVip
+                              ? 'text-[#FFD700] font-black'
+                              : 'text-slate-100'
                           }`}
                         >
                           @{horse.username}
                         </span>
+
                         {isVip && (
                           <span className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-black text-[5.5px] px-0.5 py-0 rounded font-display tracking-wider uppercase leading-none shrink-0">
                             VIP
@@ -246,31 +358,52 @@ export const TrackView: React.FC<Props> = ({
                     <div className="flex items-center gap-1">
                       <div
                         className="flex items-center gap-1 h-3 bg-[#091f0d]/95 border border-[#1b4e24]/70 rounded px-1.5 py-0 shadow backdrop-blur-md"
-                        title={`Stamina: ${Math.round(staminaPct)}%`}
+                        title={`Stamina: ${Math.round(
+                          staminaPct
+                        )}%`}
                       >
                         <Zap
                           className={`w-2 h-2 shrink-0 ${
-                            horse.isNitro ? 'text-amber-400 animate-pulse' : staminaPct > 35 ? 'text-emerald-400' : 'text-red-400'
+                            horse.isNitro
+                              ? 'text-amber-400 animate-pulse'
+                              : staminaPct > 35
+                                ? 'text-emerald-400'
+                                : 'text-red-400'
                           }`}
                         />
+
                         <div className="w-10 h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-700/60 relative shrink-0">
                           <div
                             className={`h-full rounded-full transition-all duration-200 ${
-                              horse.isNitro ? 'bg-amber-400' : staminaPct > 35 ? 'bg-emerald-500' : 'bg-red-500'
+                              horse.isNitro
+                                ? 'bg-amber-400'
+                                : staminaPct > 35
+                                  ? 'bg-emerald-500'
+                                  : 'bg-red-500'
                             }`}
-                            style={{ width: `${Math.max(3, staminaPct)}%` }}
+                            style={{
+                              width: `${Math.max(
+                                3,
+                                staminaPct
+                              )}%`,
+                            }}
                           />
                         </div>
+
                         <span className="text-[7px] sm:text-[7.5px] font-mono font-bold text-slate-200 min-w-[16px] leading-none shrink-0">
                           {Math.round(staminaPct)}%
                         </span>
                       </div>
+
                       {supporterCount > 0 && (
                         <div
                           className="flex items-center gap-0.5 h-3 bg-[#091f0d]/95 border border-[#1b4e24]/70 rounded px-1 py-0 shadow text-[7px] font-bold font-mono text-amber-300"
                         >
                           <Users className="w-1.5 h-1.5 text-[#f27d26] shrink-0" />
-                          <span className="leading-none">{supporterCount}</span>
+
+                          <span className="leading-none">
+                            {supporterCount}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -300,19 +433,27 @@ export const TrackView: React.FC<Props> = ({
                           src={avatarSrc}
                           alt={horse.username}
                           className={`w-3.5 h-3.5 rounded-full object-cover shrink-0 ${
-                            isVip ? 'border border-[#FFD700]' : 'border border-white/70'
+                            isVip
+                              ? 'border border-[#FFD700]'
+                              : 'border border-white/70'
                           }`}
                           onError={(e) => {
-                            (e.currentTarget as HTMLElement).style.display = 'none';
+                            (
+                              e.currentTarget as HTMLElement
+                            ).style.display = 'none';
                           }}
                         />
+
                         <span
                           className={`text-[9px] font-extrabold font-display truncate leading-none ${
-                            isVip ? 'text-[#FFD700] font-black' : 'text-slate-100'
+                            isVip
+                              ? 'text-[#FFD700] font-black'
+                              : 'text-slate-100'
                           }`}
                         >
                           @{horse.username}
                         </span>
+
                         {isVip && (
                           <span className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-black text-[6.5px] px-1 py-0 rounded font-display tracking-wider uppercase shadow-[0_0_6px_rgba(255,215,0,0.6)] shrink-0">
                             VIP
@@ -324,21 +465,38 @@ export const TrackView: React.FC<Props> = ({
                     <div className="flex items-center gap-1">
                       <div
                         className="flex items-center gap-1 h-3 bg-[#091f0d]/95 border border-[#1b4e24]/70 rounded px-1.5 py-0 shadow backdrop-blur-md"
-                        title={`Stamina: ${Math.round(staminaPct)}%`}
+                        title={`Stamina: ${Math.round(
+                          staminaPct
+                        )}%`}
                       >
                         <Zap
                           className={`w-2 h-2 shrink-0 ${
-                            horse.isNitro ? 'text-amber-400 animate-pulse' : staminaPct > 35 ? 'text-emerald-400' : 'text-red-400'
+                            horse.isNitro
+                              ? 'text-amber-400 animate-pulse'
+                              : staminaPct > 35
+                                ? 'text-emerald-400'
+                                : 'text-red-400'
                           }`}
                         />
+
                         <div className="w-12 h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-700/60 relative shrink-0">
                           <div
                             className={`h-full rounded-full transition-all duration-200 ${
-                              horse.isNitro ? 'bg-amber-400' : staminaPct > 35 ? 'bg-emerald-500' : 'bg-red-500'
+                              horse.isNitro
+                                ? 'bg-amber-400'
+                                : staminaPct > 35
+                                  ? 'bg-emerald-500'
+                                  : 'bg-red-500'
                             }`}
-                            style={{ width: `${Math.max(3, staminaPct)}%` }}
+                            style={{
+                              width: `${Math.max(
+                                3,
+                                staminaPct
+                              )}%`,
+                            }}
                           />
                         </div>
+
                         <span className="text-[7.5px] font-mono font-bold text-slate-200 min-w-[18px] leading-none shrink-0">
                           {Math.round(staminaPct)}%
                         </span>
@@ -349,7 +507,10 @@ export const TrackView: React.FC<Props> = ({
                           className="flex items-center gap-0.5 h-3 bg-[#091f0d]/95 border border-[#1b4e24]/70 rounded px-1 py-0 shadow backdrop-blur-md font-bold font-mono text-[7.5px] text-amber-300"
                         >
                           <Users className="w-2 h-2 text-[#f27d26] shrink-0" />
-                          <span className="leading-none">{supporterCount}</span>
+
+                          <span className="leading-none">
+                            {supporterCount}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -363,11 +524,15 @@ export const TrackView: React.FC<Props> = ({
         {/* Horizontal Scrolling 2500px Track Container with Camera Tracking */}
         <div
           className="w-[2500px] h-full flex flex-col transition-transform duration-300 ease-out relative overflow-visible"
-          style={{ transform: `translateX(-${targetOffset}px)`, overflow: 'visible' }}
+          style={{
+            transform: `translateX(-${targetOffset}px)`,
+            overflow: 'visible',
+          }}
         >
           {/* Continuous Track-Wide Finish Line Glow & Overhead Marker at 2420px */}
           <div className="absolute left-[2420px] top-0 bottom-0 w-10 pointer-events-none z-20 overflow-visible">
             <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#f27d26] shadow-[0_0_16px_rgba(242,125,38,0.95)]" />
+
             <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 bg-[#f27d26] text-black font-black text-[9px] px-2 py-0.5 rounded-b shadow-[0_0_12px_rgba(242,125,38,0.8)] uppercase tracking-wider font-display whitespace-nowrap z-30 flex items-center gap-1">
               <span>🏁</span>
               <span>FINISH</span>
@@ -396,7 +561,9 @@ export const TrackView: React.FC<Props> = ({
       {/* Bottom Command Bar: Ultra-compact (26px) in Square/Fit modes; TikTok Safe Zone (280px) in Vertical mode */}
       <footer
         className={`w-full ${
-          isSquareOrFit ? 'h-[26px]' : 'h-[280px]'
+          isSquareOrFit
+            ? 'h-[26px]'
+            : 'h-[280px]'
         } shrink-0 pointer-events-none relative z-20 flex flex-col justify-start p-0 px-2 sm:px-3 bg-gradient-to-b from-[#030804] to-transparent transition-all`}
       >
         {/* Command bar placed tightly right beneath the uninterrupted bottom line */}
@@ -413,7 +580,10 @@ export const TrackView: React.FC<Props> = ({
             Gift = Nitro Boost
           </span>
         </div>
-        {!isSquareOrFit && <div className="flex-1 w-full" />}
+
+        {!isSquareOrFit && (
+          <div className="flex-1 w-full" />
+        )}
       </footer>
     </div>
   );
