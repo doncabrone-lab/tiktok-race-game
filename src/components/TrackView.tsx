@@ -1,6 +1,6 @@
 import React from 'react';
-import { GameState, TrackLayoutMode } from '../types.ts';
-import { TrackLane } from './TrackLane.tsx';
+import { GameState, TrackLayoutMode } from '../types';
+import { TrackLane } from './TrackLane';
 import { Timer, Trophy, Sparkles, Zap, Users, Sliders } from 'lucide-react';
 
 interface Props {
@@ -367,8 +367,8 @@ export const TrackView: React.FC<Props> = ({
                             horse.isNitro
                               ? 'text-amber-400 animate-pulse'
                               : staminaPct > 35
-                                ? 'text-emerald-400'
-                                : 'text-red-400'
+                              ? 'text-emerald-400'
+                              : 'text-red-400'
                           }`}
                         />
 
@@ -378,8 +378,8 @@ export const TrackView: React.FC<Props> = ({
                               horse.isNitro
                                 ? 'bg-amber-400'
                                 : staminaPct > 35
-                                  ? 'bg-emerald-500'
-                                  : 'bg-red-500'
+                                ? 'bg-emerald-500'
+                                : 'bg-red-500'
                             }`}
                             style={{
                               width: `${Math.max(
@@ -474,8 +474,8 @@ export const TrackView: React.FC<Props> = ({
                             horse.isNitro
                               ? 'text-amber-400 animate-pulse'
                               : staminaPct > 35
-                                ? 'text-emerald-400'
-                                : 'text-red-400'
+                              ? 'text-emerald-400'
+                              : 'text-red-400'
                           }`}
                         />
 
@@ -485,8 +485,8 @@ export const TrackView: React.FC<Props> = ({
                               horse.isNitro
                                 ? 'bg-amber-400'
                                 : staminaPct > 35
-                                  ? 'bg-emerald-500'
-                                  : 'bg-red-500'
+                                ? 'bg-emerald-500'
+                                : 'bg-red-500'
                             }`}
                             style={{
                               width: `${Math.max(
