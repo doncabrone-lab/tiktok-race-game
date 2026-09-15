@@ -61,7 +61,13 @@ export interface RaceHorse {
   isVip?: boolean;
 }
 
-export type GameStatePhase = 'LOBBY' | 'COUNTDOWN' | 'RACING' | 'WINNER_CEREMONY' | 'UNLOCK_CEREMONY';
+export type GameStatePhase =
+  | 'JOINING'
+  | 'LOBBY'
+  | 'COUNTDOWN'
+  | 'RACING'
+  | 'WINNER_CEREMONY'
+  | 'UNLOCK_CEREMONY';
 
 export type RaceMode = 'STANDARD' | 'TIME_TRIAL';
 
