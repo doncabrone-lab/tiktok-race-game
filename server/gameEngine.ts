@@ -546,7 +546,7 @@ export class GameEngine {
           this.broadcastChatMessage({
             id: 'join_closed_' + now,
             username: 'SYSTEM',
-            message: `🔒 JOINING CLOSED! You now have 30s to place your horse selection with !bet 1-${this.state.horses.length}.`,
+            message: `🔒 JOINING CLOSED! You now have 30s to pick a horse with !pick 1-${this.state.horses.length} (or !bet 1-${this.state.horses.length}).`,
             type: 'system',
             timestamp: now,
           });
@@ -2403,22 +2403,26 @@ export class GameEngine {
       return;
     }
 
-    // Spectator Betting.
+    // Spectator Horse Selection.
+    // !pick is the official command; !bet remains supported as a backwards-compatible alias.
+    // Selection is allowed during the 30s lobby, 3s countdown, and while the race is running.
     const betMatch =
       text.match(
-        /^!(?:bet\s+)?([1-9])$/i
+        /^!(?:(?:pick|bet)\s+)?([1-9])$/i
       );
 
     if (betMatch) {
-      if (
-        this.state.phase !==
-        'LOBBY'
-      ) {
+      const selectionOpen =
+        this.state.phase === 'LOBBY' ||
+        this.state.phase === 'COUNTDOWN' ||
+        this.state.phase === 'RACING';
+
+      if (!selectionOpen) {
         this.broadcastChatMessage({
           id: 'bet_err_' + now,
           username: cleanUser,
           message:
-            `⚠️ Betting is only open during the 30s horse-pick lobby!`,
+            `⚠️ Horse selection is closed right now. Wait for the next race.`,
           type: 'chat',
           timestamp: now,
         });
@@ -2432,10 +2436,23 @@ export class GameEngine {
           10
         );
 
-      if (
-        targetLane >
-        this.state.horses.length
-      ) {
+      const horse =
+        this.state.horses.find(
+          (h) =>
+            h.lane ===
+            targetLane
+        );
+
+      if (!horse) {
+        this.broadcastChatMessage({
+          id: 'bet_err_' + now,
+          username: cleanUser,
+          message:
+            `⚠️ Invalid horse. Pick a lane from 1-${this.state.horses.length}.`,
+          type: 'chat',
+          timestamp: now,
+        });
+
         return;
       }
 
@@ -2477,19 +2494,17 @@ export class GameEngine {
         });
       }
 
-      const horse =
-        this.state.horses.find(
-          (h) =>
-            h.lane ===
-            targetLane
-        );
+      const phaseText =
+        this.state.phase === 'RACING'
+          ? '🏇 Late pick accepted'
+          : '🎯 Pick accepted';
 
       this.broadcastChatMessage({
         id: 'bet_' + now,
         username:
           cleanUser,
         message:
-          `🎯 @${cleanUser} selected Lane ${targetLane} (@${horse?.username || 'Runner'})! You can change your selection before the race starts.`,
+          `${phaseText}: @${cleanUser} picked Lane ${targetLane} (@${horse.username})! Taps and gifts now boost this horse.`,
         type: 'chat',
         timestamp: now,
       });
@@ -2552,46 +2567,41 @@ export class GameEngine {
       | RaceHorse
       | undefined;
 
-    // Racer auto-tap.
-    const racerHorse =
-      this.state.horses.find(
-        (h) =>
-          h.username.toLowerCase() ===
+    // Only boost horses during the actual race.
+    if (this.state.phase !== 'RACING') {
+      return;
+    }
+
+    // Explicit spectator selection takes priority over everything else.
+    // This lets late viewers type !pick 1-9 during the race and then
+    // have all taps boost that selected lane.
+    const bet =
+      this.state.bets.find(
+        (b) =>
+          b.username.toLowerCase() ===
           cleanUser
       );
 
-    if (racerHorse) {
+    if (bet) {
       targetHorse =
-        racerHorse;
-    } else {
-      // Bettor tap.
-      const bet =
-        this.state.bets.find(
-          (b) =>
-            b.username.toLowerCase() ===
-            cleanUser
+        this.state.horses.find(
+          (h) =>
+            h.lane ===
+            bet.lane
         );
-
-      if (bet) {
-        targetHorse =
-          this.state.horses.find(
-            (h) =>
-              h.lane ===
-              bet.lane
-          );
-      } else if (
-        targetLane
-      ) {
-        targetHorse =
-          this.state.horses.find(
-            (h) =>
-              h.lane ===
-              targetLane
-          );
-      } else {
-        targetHorse =
-          this.state.horses[0];
-      }
+    } else if (
+      targetLane
+    ) {
+      // Explicit lane targeting is still supported for host/admin UI.
+      targetHorse =
+        this.state.horses.find(
+          (h) =>
+            h.lane ===
+            targetLane
+        );
+    } else {
+      // No selection = no horse. Never silently default to Lane 1.
+      return;
     }
 
     if (
@@ -2751,27 +2761,32 @@ export class GameEngine {
       | RaceHorse
       | undefined;
 
-    // Racer auto-gift.
-    const racerHorse =
-      this.state.horses.find(
-        (h) =>
-          h.username.toLowerCase() ===
+    // Gifts boost horses only during the actual race.
+    if (this.state.phase !== 'RACING') {
+      return;
+    }
+
+    // Explicit spectator selection takes priority over racer identity.
+    // This matches !pick behavior: the viewer's selected lane receives
+    // their gifts even if their username also exists as a racer.
+    const bet =
+      this.state.bets.find(
+        (b) =>
+          b.username.toLowerCase() ===
           cleanUser.toLowerCase()
       );
 
-    if (
-      racerHorse &&
-      (
-        !targetLane ||
-        targetLane ===
-          racerHorse.lane
-      )
-    ) {
+    if (bet) {
       boostedHorse =
-        racerHorse;
+        this.state.horses.find(
+          (h) =>
+            h.lane ===
+            bet.lane
+        );
     } else if (
       targetLane
     ) {
+      // Explicit lane targeting is still supported for host/admin UI.
       boostedHorse =
         this.state.horses.find(
           (h) =>
@@ -2779,24 +2794,8 @@ export class GameEngine {
             targetLane
         );
     } else {
-      const bet =
-        this.state.bets.find(
-          (b) =>
-            b.username.toLowerCase() ===
-            cleanUser.toLowerCase()
-        );
-
-      if (bet) {
-        boostedHorse =
-          this.state.horses.find(
-            (h) =>
-              h.lane ===
-              bet.lane
-          );
-      } else {
-        boostedHorse =
-          this.state.horses[0];
-      }
+      // No selection = no horse. Never silently default to Lane 1.
+      return;
     }
 
     if (
