@@ -27,10 +27,10 @@ export interface PlayerProfile {
   totalGifts: number;
 }
 
-export const MAX_STAMINA_CAP = 100; // Base tier max stamina cap (100 STA)
-export const BASE_STAMINA_DRAIN = 5; // 5 STA per second during continuous galloping
-export const TAP_STAMINA_BONUS = 2; // 1 Tap = +2 STA added directly to horse pool (10 Taps = +20 STA)
-export const TAP_SPEED_BONUS = 0.5; // 1 Tap = +0.5 instant speed burst
+export const MAX_STAMINA_CAP = 100;
+export const BASE_STAMINA_DRAIN = 5;
+export const TAP_STAMINA_BONUS = 2;
+export const TAP_SPEED_BONUS = 0.5;
 
 export interface RaceHorse {
   lane: number;
@@ -41,7 +41,7 @@ export interface RaceHorse {
   flagEmoji: string;
   horseLevel: number;
   skin: HorseSkinDef;
-  distance: number; // 0 to 100%
+  distance: number;
   speed: number;
   stamina: number;
   maxStamina: number;
@@ -50,7 +50,7 @@ export interface RaceHorse {
   speedBoostPercent?: number;
   speedBoostTimer?: number;
   speed_points?: number;
-  tapSpeedBonus?: number; // Active tap speed surge (+0.5 speed per tap, stacks up to +6.0)
+  tapSpeedBonus?: number;
   lastTapTime?: number;
   finished: boolean;
   finishRank?: number;
@@ -71,7 +71,10 @@ export type GameStatePhase =
 
 export type RaceMode = 'STANDARD' | 'TIME_TRIAL';
 
-export type TrackLayoutMode = 'SQUARE' | 'VERTICAL' | 'FIT';
+export type TrackLayoutMode =
+  | 'SQUARE'
+  | 'VERTICAL'
+  | 'FIT';
 
 export interface Bet {
   username: string;
@@ -81,41 +84,118 @@ export interface Bet {
 }
 
 export interface MVPStats {
-  topTapper?: { username: string; taps: number };
-  topGifter?: { username: string; gifts: number; value: number };
+  topTapper?: {
+    username: string;
+    taps: number;
+  };
+  topGifter?: {
+    username: string;
+    gifts: number;
+    value: number;
+  };
 }
 
 export interface RaceWinnerInfo {
-  first: { username: string; horseLevel: number; skinName: string; lane: number; avatarUrl?: string; points?: number };
-  second?: { username: string; horseLevel: number; skinName: string; lane: number; avatarUrl?: string; points?: number };
-  third?: { username: string; horseLevel: number; skinName: string; lane: number; avatarUrl?: string; points?: number };
+  first: {
+    username: string;
+    horseLevel: number;
+    skinName: string;
+    lane: number;
+    avatarUrl?: string;
+    points?: number;
+  };
+
+  second?: {
+    username: string;
+    horseLevel: number;
+    skinName: string;
+    lane: number;
+    avatarUrl?: string;
+    points?: number;
+  };
+
+  third?: {
+    username: string;
+    horseLevel: number;
+    skinName: string;
+    lane: number;
+    avatarUrl?: string;
+    points?: number;
+  };
+
   mvp: MVPStats;
-  payouts: Array<{ username: string; coins: number; reason: string }>;
+
+  payouts: Array<{
+    username: string;
+    coins: number;
+    reason: string;
+  }>;
+}
+
+export interface StatsAlert {
+  username: string;
+  type: 'wins' | 'points';
+  value: number;
+  text: string;
+  timestamp: number;
 }
 
 export interface GameState {
   phase: GameStatePhase;
+
   lobbyTimeLeft: number;
   countdownTimeLeft: number;
+
   raceDuration: number;
-  raceTimeLeft: number; // for Time Trial
-  totalRaceTime?: number; // total duration of current race in seconds (e.g. 60, 120, 180)
-  configuredDuration?: number | 'unlimited'; // host configured duration
-  targetMeters: number; // 500, 1000, 1500 meters
-  remainingMeters?: number; // meters countdown during race
+  raceTimeLeft: number;
+  totalRaceTime?: number;
+
+  configuredDuration?: number | 'unlimited';
+
+  targetMeters: number;
+  remainingMeters?: number;
+
   mode: RaceMode;
+
   targetLanes: number;
+
   isLobbyPaused?: boolean;
+
   matchMode?: 'PUBLIC' | 'INVITE_ONLY';
+
   invitedUsers?: string[];
+
   raceIndex?: number;
+
   lobbyApplicants?: string[];
+
   horses: RaceHorse[];
+
   bets: Bet[];
-  activatedSpectators: Record<string, { taps: number; coinsEarned: number }>;
+
+  latestPick?: {
+    username: string;
+    lane: number;
+    horseName?: string;
+    timestamp: number;
+  };
+
+  latestStatsAlert?: StatsAlert;
+
+  activatedSpectators: Record<
+    string,
+    {
+      taps: number;
+      coinsEarned: number;
+    }
+  >;
+
   currentRaceId: string;
+
   hostBroadcasterId: string;
+
   winnerInfo?: RaceWinnerInfo;
+
   unlockInfo?: {
     username: string;
     unlockedLevel: number;
@@ -131,7 +211,13 @@ export interface ChatMessage {
   isHost?: boolean;
   isVIP?: boolean;
   timestamp: number;
-  type?: 'chat' | 'command' | 'system' | 'gift' | 'tap';
+  type?:
+    | 'chat'
+    | 'command'
+    | 'system'
+    | 'gift'
+    | 'tap';
+
   giftName?: string;
   giftCount?: number;
 }
