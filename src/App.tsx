@@ -1,10 +1,15 @@
+```tsx
 import React, { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { GameState, ChatMessage, TrackLayoutMode, StatsAlert } from './types.ts';
+import {
+  GameState,
+  ChatMessage,
+  TrackLayoutMode,
+  StatsAlert,
+} from './types.ts';
 import { TrackView } from './components/TrackView.tsx';
 import { WinnerCeremonyModal } from './components/WinnerCeremonyModal.tsx';
 import { UnlockCeremonyModal } from './components/UnlockCeremonyModal.tsx';
-import { JoinNowOverlay } from './components/JoinNowOverlay.tsx';
 import { StreamerControlDock } from './components/StreamerControlDock.tsx';
 import { HORSE_SKINS } from './skinsData.ts';
 import { audioManager } from './utils/audioManager.ts';
@@ -175,8 +180,7 @@ export default function App() {
 
   /*
    * Latest !pick confirmation.
-   * This is displayed by TrackView instead of relying on TikTok chat
-   * feedback.
+   * TrackView displays this directly in the game UI.
    */
   const [latestPick, setLatestPick] = useState<{
     username: string;
@@ -187,67 +191,13 @@ export default function App() {
 
   /*
    * Latest !points / !wins confirmation.
-   * This is displayed by TrackView as a temporary stats notification.
+   * TrackView displays this directly in the game UI.
    */
   const [latestStatsAlert, setLatestStatsAlert] =
     useState<StatsAlert | null>(null);
 
   /*
-   * JOIN NOW visual overlay.
-   *
-   * This is kept for compatibility with the existing JoinNowOverlay
-   * component and broadcaster controls.
-   */
-  const [showJoinNow, setShowJoinNow] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const searchParams = new URLSearchParams(window.location.search);
-
-      if (
-        searchParams.has('joinnow') ||
-        searchParams.has('join')
-      ) {
-        return true;
-      }
-    }
-
-    return false;
-  });
-
-  /*
-   * Automatically trigger the visual JOIN NOW overlay after the
-   * winner/unlock ceremony transitions back to the lobby.
-   */
-  const prevPhaseRef = React.useRef(gameState.phase);
-
-  useEffect(() => {
-    const prevPhase = prevPhaseRef.current;
-
-    prevPhaseRef.current = gameState.phase;
-
-    if (
-      (prevPhase === 'WINNER_CEREMONY' ||
-        prevPhase === 'UNLOCK_CEREMONY') &&
-      gameState.phase === 'LOBBY'
-    ) {
-      setShowJoinNow(true);
-    }
-
-    /*
-     * Never leave the JOIN NOW overlay covering the actual race.
-     */
-    if (
-      gameState.phase === 'COUNTDOWN' ||
-      gameState.phase === 'RACING'
-    ) {
-      setShowJoinNow(false);
-    }
-  }, [gameState.phase]);
-
-  /*
    * Socket connection.
-   *
-   * The browser connects back to the same server/origin that served
-   * the game. This preserves the existing production deployment model.
    */
   useEffect(() => {
     const newSocket = io({
@@ -261,9 +211,7 @@ export default function App() {
     });
 
     /*
-     * Main game state.
-     *
-     * This is the authoritative state coming from the backend.
+     * Main authoritative game state.
      */
     newSocket.on(
       'game:state',
@@ -286,10 +234,7 @@ export default function App() {
     );
 
     /*
-     * Immediate !pick confirmation.
-     *
-     * Backend should emit:
-     * pick:confirmed
+     * Immediate !pick / !bet confirmation.
      */
     newSocket.on(
       'pick:confirmed',
@@ -305,9 +250,6 @@ export default function App() {
 
     /*
      * Immediate !points / !wins confirmation.
-     *
-     * Backend should emit:
-     * stats:confirmed
      */
     newSocket.on(
       'stats:confirmed',
@@ -340,8 +282,8 @@ export default function App() {
   }, []);
 
   /*
-   * If the backend includes latestPick inside game:state,
-   * keep the local UI notification synchronized.
+   * Keep the pick notification synchronized with
+   * the backend game state.
    */
   useEffect(() => {
     if (
@@ -353,8 +295,8 @@ export default function App() {
   }, [gameState.latestPick?.timestamp]);
 
   /*
-   * If the backend includes latestStatsAlert inside game:state,
-   * keep the local UI notification synchronized.
+   * Keep the stats notification synchronized with
+   * the backend game state.
    */
   useEffect(() => {
     if (
@@ -369,9 +311,6 @@ export default function App() {
 
   /*
    * Synchronize horse galloping audio with RACING phase.
-   *
-   * The audio starts when racing starts and stops whenever
-   * the game leaves the RACING phase.
    */
   useEffect(() => {
     if (gameState.phase === 'RACING') {
@@ -420,8 +359,8 @@ export default function App() {
   /*
    * Tap handling.
    *
-   * The backend decides which horse the viewer is actually assigned
-   * to based on their !pick / !bet selection.
+   * The backend determines the selected horse from
+   * the viewer's !pick / !bet selection.
    */
   const handleTap = (
     lane?: number,
@@ -764,7 +703,7 @@ export default function App() {
     };
 
   /*
-   * Dynamic lane sizing class.
+   * Dynamic lane sizing.
    */
   const activeLanesCount =
     gameState.horses.length;
@@ -813,26 +752,7 @@ export default function App() {
           onToggleLayoutMode={
             handleToggleLayoutMode
           }
-          onTriggerJoinNow={() =>
-            setShowJoinNow(true)
-          }
         />
-
-        {showJoinNow && (
-          <JoinNowOverlay
-            initialSeconds={15}
-            activeLanesCount={
-              gameState.horses.length
-            }
-            horses={gameState.horses}
-            onComplete={() =>
-              setShowJoinNow(false)
-            }
-            onDismiss={() =>
-              setShowJoinNow(false)
-            }
-          />
-        )}
 
         {gameState.phase ===
           'WINNER_CEREMONY' &&
@@ -908,10 +828,8 @@ export default function App() {
         onSetMatchMode={
           handleSetMatchMode
         }
-        onTriggerJoinNow={() =>
-          setShowJoinNow(true)
-        }
       />
     </div>
   );
 }
+```
