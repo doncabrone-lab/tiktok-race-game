@@ -1,4 +1,3 @@
-```tsx
 import React, { useEffect, useState } from 'react';
 
 interface JoinNowOverlayProps {
@@ -84,4 +83,3 @@ export function JoinNowOverlay({
     </div>
   );
 }
-```
