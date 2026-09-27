@@ -27,10 +27,10 @@ export interface PlayerProfile {
   totalGifts: number;
 }
 
-export const MAX_STAMINA_CAP = 100;
-export const BASE_STAMINA_DRAIN = 5;
-export const TAP_STAMINA_BONUS = 2;
-export const TAP_SPEED_BONUS = 0.5;
+export const MAX_STAMINA_CAP = 100; // Base tier max stamina cap (100 STA)
+export const BASE_STAMINA_DRAIN = 5; // 5 STA per second during continuous galloping
+export const TAP_STAMINA_BONUS = 2; // 1 Tap = +2 STA added directly to horse pool (10 Taps = +20 STA)
+export const TAP_SPEED_BONUS = 0.5; // 1 Tap = +0.5 instant speed burst
 
 export interface RaceHorse {
   lane: number;
@@ -41,7 +41,7 @@ export interface RaceHorse {
   flagEmoji: string;
   horseLevel: number;
   skin: HorseSkinDef;
-  distance: number;
+  distance: number; // 0 to 100%
   speed: number;
   stamina: number;
   maxStamina: number;
@@ -50,7 +50,7 @@ export interface RaceHorse {
   speedBoostPercent?: number;
   speedBoostTimer?: number;
   speed_points?: number;
-  tapSpeedBonus?: number;
+  tapSpeedBonus?: number; // Active tap speed surge (+0.5 speed per tap, stacks up to +6.0)
   lastTapTime?: number;
   finished: boolean;
   finishRank?: number;
