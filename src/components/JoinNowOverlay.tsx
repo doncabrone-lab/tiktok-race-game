@@ -1,4 +1,3 @@
-```tsx
 import React, { useEffect, useRef, useState } from 'react';
 import { Users, Sparkles, X } from 'lucide-react';
 import { RaceHorse } from '../types.ts';
@@ -19,7 +18,6 @@ export const JoinNowOverlay: React.FC<Props> = ({
   horses = [],
 }) => {
   const [secondsLeft, setSecondsLeft] = useState<number>(initialSeconds);
-
   const onCompleteRef = useRef(onComplete);
   const onDismissRef = useRef(onDismiss);
 
@@ -31,22 +29,22 @@ export const JoinNowOverlay: React.FC<Props> = ({
   useEffect(() => {
     const targetEndTime = Date.now() + initialSeconds * 1000;
 
-    const interval = window.setInterval(() => {
+    const interval = setInterval(() => {
       const remainingMs = targetEndTime - Date.now();
       const nextSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
 
       setSecondsLeft(nextSeconds);
 
       if (remainingMs <= 0) {
-        window.clearInterval(interval);
+        clearInterval(interval);
 
-        window.setTimeout(() => {
+        setTimeout(() => {
           onCompleteRef.current();
         }, 400);
       }
     }, 100);
 
-    return () => window.clearInterval(interval);
+    return () => clearInterval(interval);
   }, [initialSeconds]);
 
   const handleDismiss = (e: React.MouseEvent) => {
@@ -62,14 +60,8 @@ export const JoinNowOverlay: React.FC<Props> = ({
   // SVG circular countdown gauge
   const radius = 46;
   const circumference = 2 * Math.PI * radius;
-
-  const progressRatio =
-    initialSeconds > 0
-      ? Math.max(0, secondsLeft / initialSeconds)
-      : 0;
-
-  const strokeDashoffset =
-    circumference * (1 - progressRatio);
+  const progressRatio = Math.max(0, secondsLeft / initialSeconds);
+  const strokeDashoffset = circumference * (1 - progressRatio);
 
   // Dynamic urgency colors
   const isUrgent = secondsLeft <= 3 && secondsLeft > 0;
@@ -105,68 +97,30 @@ export const JoinNowOverlay: React.FC<Props> = ({
           accentBar: 'from-emerald-400 via-teal-300 to-emerald-400',
         };
 
-  /*
-   * If real horses exist, use them.
-   * Otherwise create visual placeholder lanes so the
-   * countdown still has the same AI Studio appearance.
-   */
-  const validHorses: RaceHorse[] =
-    horses && horses.length > 0
-      ? horses
-      : Array.from(
-          { length: Math.max(0, activeLanesCount) },
-          (_, i) => ({
-            lane: i + 1,
-            username: `Runner ${i + 1}`,
-            countryName: 'USA',
-            countryCode: 'US',
-            flagEmoji: '🇺🇸',
-            horseLevel: 1,
-            skin: {
-              level: 1,
-              name: 'Standard',
-              image: '',
-              speed: 1,
-              maxStamina: 100,
-              unlockReq: '',
-              winReq: 0,
-              coinReq: 0,
-              vipReq: false,
-              trailType: '',
-              auraDescription: '',
-              themeColor: '#888',
-            },
-            distance: 0,
-            speed: 1,
-            stamina: 100,
-            maxStamina: 100,
-            isNitro: false,
-            nitroTimer: 0,
-            finished: false,
-            tapsReceived: 0,
-            giftsReceived: 0,
-          }),
-        );
+  // Use actual horses when available.
+  // No country names, country codes, or flags are displayed.
+  const validHorses = horses.length > 0
+    ? horses
+    : Array.from({ length: activeLanesCount }, (_, i) => ({
+        lane: i + 1,
+        username: `Runner ${i + 1}`,
+        horseLevel: 1,
+        distance: 0,
+        speed: 1,
+        stamina: 100,
+        maxStamina: 100,
+        isNitro: false,
+        nitroTimer: 0,
+        finished: false,
+        tapsReceived: 0,
+        giftsReceived: 0,
+      })) as RaceHorse[];
 
   const midIndex = Math.ceil(validHorses.length / 2);
-
   const leftRacers = validHorses.slice(0, midIndex);
   const rightRacers = validHorses.slice(midIndex);
 
-  const enteredPlayersCount = validHorses.filter(
-    (h) =>
-      h.is_vip ||
-      h.isVip ||
-      (h.username &&
-        !h.username.startsWith('Turbo') &&
-        !h.username.startsWith('Desert') &&
-        !h.username.startsWith('Neon') &&
-        !h.username.startsWith('Sahara') &&
-        !h.username.startsWith('Tokyo') &&
-        !h.username.startsWith('Runner'))
-  ).length;
-
-  const isPlayer = (horse: RaceHorse) =>
+  const isActualPlayer = (horse: RaceHorse) =>
     Boolean(
       horse.is_vip ||
         horse.isVip ||
@@ -179,6 +133,48 @@ export const JoinNowOverlay: React.FC<Props> = ({
           !horse.username.startsWith('Runner'))
     );
 
+  const enteredPlayersCount = validHorses.filter(isActualPlayer).length;
+
+  const renderRacer = (horse: RaceHorse) => {
+    const isPlayer = isActualPlayer(horse);
+
+    return (
+      <div
+        key={horse.lane}
+        className={`flex items-center gap-1 sm:gap-1.5 px-1.5 py-1 rounded-lg border text-left transition-all duration-200 ${
+          isPlayer
+            ? 'bg-emerald-950/80 border-emerald-400/80 text-emerald-200 shadow-[0_0_8px_rgba(16,185,129,0.3)]'
+            : 'bg-[#0d1219]/90 border-slate-800/80 text-slate-400'
+        }`}
+      >
+        <span
+          className={`w-4 h-4 rounded flex items-center justify-center text-[9px] font-mono font-black shrink-0 ${
+            isPlayer
+              ? 'bg-emerald-400 text-black font-extrabold shadow-sm'
+              : 'bg-slate-800 text-slate-300 border border-slate-700'
+          }`}
+        >
+          {horse.lane}
+        </span>
+
+        <span className="text-[10px] sm:text-[11px] font-bold font-mono truncate leading-none flex-1">
+          @{horse.username}
+        </span>
+
+        {isPlayer ? (
+          <span
+            className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 animate-pulse"
+            title="Entered and ready to race"
+          />
+        ) : (
+          <span className="text-[7px] text-slate-500 font-mono shrink-0">
+            READY
+          </span>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div
       onClick={(e) => e.stopPropagation()}
@@ -187,12 +183,12 @@ export const JoinNowOverlay: React.FC<Props> = ({
       <div
         className={`w-full max-w-lg sm:max-w-xl bg-gradient-to-b from-[#10141a]/95 via-[#080b0f]/95 to-[#10141a]/95 border-2 ${colorTheme.cardBorder} ${colorTheme.glow} rounded-3xl p-3.5 sm:p-4 relative overflow-hidden flex flex-col items-center text-center transition-all duration-300`}
       >
-        {/* Top glowing header line */}
+        {/* Top glowing header */}
         <div
           className={`absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r ${colorTheme.accentBar} transition-colors duration-500`}
         />
 
-        {/* Ambient radial spotlight */}
+        {/* Ambient spotlight */}
         <div className="absolute -top-20 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
         {/* Top controls */}
@@ -234,7 +230,7 @@ export const JoinNowOverlay: React.FC<Props> = ({
 
         {/* Racers + countdown */}
         <div className="w-full flex items-center justify-between gap-1.5 sm:gap-2.5 my-1.5 sm:my-2">
-          {/* LEFT RACERS */}
+          {/* Left racers */}
           <div className="flex-1 flex flex-col gap-1 min-w-0">
             <div className="flex items-center justify-between px-1 pb-0.5 border-b border-slate-800">
               <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider">
@@ -246,48 +242,10 @@ export const JoinNowOverlay: React.FC<Props> = ({
               </span>
             </div>
 
-            {leftRacers.map((h) => {
-              const player = isPlayer(h);
-
-              return (
-                <div
-                  key={h.lane}
-                  className={`flex items-center gap-1 sm:gap-1.5 px-1.5 py-1 rounded-lg border text-left transition-all duration-200 ${
-                    player
-                      ? 'bg-emerald-950/80 border-emerald-400/80 text-emerald-200 shadow-[0_0_8px_rgba(16,185,129,0.3)]'
-                      : 'bg-[#0d1219]/90 border-slate-800/80 text-slate-400'
-                  }`}
-                >
-                  <span
-                    className={`w-4 h-4 rounded flex items-center justify-center text-[9px] font-mono font-black shrink-0 ${
-                      player
-                        ? 'bg-emerald-400 text-black font-extrabold shadow-sm'
-                        : 'bg-slate-800 text-slate-300 border border-slate-700'
-                    }`}
-                  >
-                    {h.lane}
-                  </span>
-
-                  <span className="text-[10px] sm:text-[11px] font-bold font-mono truncate leading-none flex-1">
-                    @{h.username}
-                  </span>
-
-                  {player ? (
-                    <span
-                      className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 animate-pulse"
-                      title="Entered and ready to race"
-                    />
-                  ) : (
-                    <span className="text-[7px] text-slate-500 font-mono shrink-0">
-                      READY
-                    </span>
-                  )}
-                </div>
-              );
-            })}
+            {leftRacers.map(renderRacer)}
           </div>
 
-          {/* CENTER COUNTDOWN */}
+          {/* Center countdown */}
           <div className="shrink-0 relative flex items-center justify-center mx-1 sm:mx-2">
             <svg
               className="w-24 h-24 sm:w-28 sm:h-28 -rotate-90 transform"
@@ -330,7 +288,7 @@ export const JoinNowOverlay: React.FC<Props> = ({
             </div>
           </div>
 
-          {/* RIGHT RACERS */}
+          {/* Right racers */}
           <div className="flex-1 flex flex-col gap-1 min-w-0">
             <div className="flex items-center justify-between px-1 pb-0.5 border-b border-slate-800">
               <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider">
@@ -342,49 +300,11 @@ export const JoinNowOverlay: React.FC<Props> = ({
               </span>
             </div>
 
-            {rightRacers.map((h) => {
-              const player = isPlayer(h);
-
-              return (
-                <div
-                  key={h.lane}
-                  className={`flex items-center gap-1 sm:gap-1.5 px-1.5 py-1 rounded-lg border text-left transition-all duration-200 ${
-                    player
-                      ? 'bg-emerald-950/80 border-emerald-400/80 text-emerald-200 shadow-[0_0_8px_rgba(16,185,129,0.3)]'
-                      : 'bg-[#0d1219]/90 border-slate-800/80 text-slate-400'
-                  }`}
-                >
-                  <span
-                    className={`w-4 h-4 rounded flex items-center justify-center text-[9px] font-mono font-black shrink-0 ${
-                      player
-                        ? 'bg-emerald-400 text-black font-extrabold shadow-sm'
-                        : 'bg-slate-800 text-slate-300 border border-slate-700'
-                    }`}
-                  >
-                    {h.lane}
-                  </span>
-
-                  <span className="text-[10px] sm:text-[11px] font-bold font-mono truncate leading-none flex-1">
-                    @{h.username}
-                  </span>
-
-                  {player ? (
-                    <span
-                      className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 animate-pulse"
-                      title="Entered and ready to race"
-                    />
-                  ) : (
-                    <span className="text-[7px] text-slate-500 font-mono shrink-0">
-                      READY
-                    </span>
-                  )}
-                </div>
-              );
-            })}
+            {rightRacers.map(renderRacer)}
           </div>
         </div>
 
-        {/* TikTok chat command */}
+        {/* TikTok command */}
         <div className="w-full bg-[#05080c]/90 border border-emerald-500/40 rounded-2xl p-2.5 sm:p-3 my-1.5 sm:my-2 flex flex-col items-center gap-1 shadow-inner">
           <span className="text-[10px] sm:text-[11px] font-bold text-slate-300 uppercase tracking-wider font-display">
             TYPE IN TIKTOK CHAT TO ENTER:
@@ -410,10 +330,10 @@ export const JoinNowOverlay: React.FC<Props> = ({
           <span className="inline-block w-2 h-2 rounded-full bg-emerald-400" />
 
           <span>
-            {activeLanesCount} LANES ACTIVE •{' '}
+            {activeLanesCount} LANES ACTIVE
             {enteredPlayersCount > 0
-              ? `${enteredPlayersCount} ENTERED • `
-              : ''}
+              ? ` • ${enteredPlayersCount} ENTERED • `
+              : ' • '}
             FREE TO PLAY
           </span>
         </div>
@@ -421,4 +341,3 @@ export const JoinNowOverlay: React.FC<Props> = ({
     </div>
   );
 };
-```
