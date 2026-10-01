@@ -6,6 +6,7 @@ import {
   RaceWinnerInfo,
   ChatMessage,
   RaceMode,
+  StatsAlert,
   MAX_STAMINA_CAP,
   BASE_STAMINA_DRAIN,
   TAP_STAMINA_BONUS,
@@ -1749,31 +1750,32 @@ export class GameEngine {
       }
     }
 
-    // !wins command.
+    // !wins / !win command.
+    // Also emit a UI confirmation so viewers can see the result in-game.
     if (
-      text
-        .toLowerCase()
-        .startsWith('!wins')
+      text.toLowerCase().startsWith('!wins') ||
+      text.toLowerCase() === '!win'
     ) {
-      const parts =
-        text.split(/\s+/);
+      const parts = text.split(/\s+/);
 
       const targetUser =
         parts[1]
-          ? parts[1]
-              .replace(/^@/, '')
-              .trim()
+          ? parts[1].replace(/^@/, '').trim()
           : cleanUser;
 
-      const user =
-        await getUser(
-          targetUser
-        );
+      const user = await getUser(targetUser);
+      const wins = user.wins_count ?? user.wins ?? 0;
 
-      const wins =
-        user.wins_count ??
-        user.wins ??
-        0;
+      const statsData: StatsAlert = {
+        username: targetUser,
+        type: 'wins',
+        value: wins,
+        text: `${wins} ${wins === 1 ? 'Win' : 'Wins'}`,
+        timestamp: now,
+      };
+
+      this.state.latestStatsAlert = statsData;
+      this.io.emit('stats:confirmed', statsData);
 
       this.broadcastChatMessage({
         id: 'wins_' + now,
@@ -1787,15 +1789,26 @@ export class GameEngine {
       return;
     }
 
-    // !points / !pts.
+    // !points / !pts / !point command.
     const pointsCommands =
-      ['!points', '!pts'];
+      ['!points', '!pts', '!point'];
 
-    if (
+    const isPointsCmd =
       pointsCommands.includes(
         text.toLowerCase()
-      )
-    ) {
+      ) ||
+      text.toLowerCase().startsWith('!points ') ||
+      text.toLowerCase().startsWith('!pts ');
+
+    if (isPointsCmd) {
+      const parts =
+        text.split(/\s+/);
+
+      const targetUser =
+        parts[1]
+          ? parts[1].replace(/^@/, '').trim()
+          : cleanUser;
+
       const lastCheck =
         this.pointsCooldowns.get(
           cleanUser.toLowerCase()
@@ -1807,10 +1820,8 @@ export class GameEngine {
       ) {
         const remaining =
           Math.ceil(
-            (
-              15000 -
-              (now - lastCheck)
-            ) / 1000
+            (15000 - (now - lastCheck)) /
+              1000
           );
 
         this.broadcastChatMessage({
@@ -1831,20 +1842,39 @@ export class GameEngine {
       );
 
       const user =
-        await getUser(
-          cleanUser
-        );
+        await getUser(targetUser);
 
       const skin =
         getSkinByLevel(
           user.horse_level
         );
 
+      const pts =
+        user.coins ??
+        user.jc_balance ??
+        0;
+
+      const statsData: StatsAlert = {
+        username: targetUser,
+        type: 'points',
+        value: pts,
+        text: `${pts} Pts`,
+        timestamp: now,
+      };
+
+      this.state.latestStatsAlert =
+        statsData;
+
+      this.io.emit(
+        'stats:confirmed',
+        statsData
+      );
+
       this.broadcastChatMessage({
         id: 'pts_' + now,
         username: cleanUser,
         message:
-          `🪙 JC: ${user.jc_balance} | 🏆 Wins: ${user.wins_count ?? user.wins ?? 0} | 🐎 Tier ${user.horse_level} [${skin.name}]`,
+          `🪙 JC: ${user.jc_balance ?? user.coins ?? 0} | 🏆 Wins: ${user.wins_count ?? user.wins ?? 0} | 🐎 Tier ${user.horse_level} [${skin.name}]`,
         type: 'chat',
         timestamp: now,
       });
@@ -2113,6 +2143,23 @@ export class GameEngine {
             h.username.toLowerCase() ===
             cleanUser.toLowerCase()
         );
+
+      if (joinedHorse) {
+        const pickData = {
+          username: cleanUser,
+          lane: joinedHorse.lane,
+          horseName: joinedHorse.username,
+          timestamp: now,
+        };
+
+        this.state.latestPick =
+          pickData;
+
+        this.io.emit(
+          'pick:confirmed',
+          pickData
+        );
+      }
 
       this.broadcastChatMessage({
         id: 'join_' + now,
@@ -2498,6 +2545,21 @@ export class GameEngine {
         this.state.phase === 'RACING'
           ? '🏇 Late pick accepted'
           : '🎯 Pick accepted';
+
+      const pickData = {
+        username: cleanUser,
+        lane: targetLane,
+        horseName: horse.username,
+        timestamp: now,
+      };
+
+      this.state.latestPick =
+        pickData;
+
+      this.io.emit(
+        'pick:confirmed',
+        pickData
+      );
 
       this.broadcastChatMessage({
         id: 'bet_' + now,
