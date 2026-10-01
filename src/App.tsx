@@ -166,6 +166,8 @@ export default function App() {
           return savedHost;
         }
       } catch {}
+
+      return 'patronizzle';
     }
 
     return 'patronizzle';
@@ -214,8 +216,11 @@ export default function App() {
   });
 
   /*
-   * Automatically trigger the visual JOIN NOW overlay after the
-   * winner/unlock ceremony transitions back to the lobby.
+   * Automatically trigger the visual JOIN NOW overlay.
+   *
+   * The backend's JOINING phase is the authoritative 15-second
+   * registration window. This makes the AI Studio-style lobby
+   * appear automatically when the real game enters JOINING.
    */
   const prevPhaseRef = React.useRef(gameState.phase);
 
@@ -224,6 +229,20 @@ export default function App() {
 
     prevPhaseRef.current = gameState.phase;
 
+    /*
+     * REAL JOINING PHASE
+     *
+     * The backend controls this phase. When it starts, show the
+     * visual JoinNowOverlay immediately.
+     */
+    if (gameState.phase === 'JOINING') {
+      setShowJoinNow(true);
+    }
+
+    /*
+     * Also show JOIN NOW when a completed race transitions back
+     * into the lobby for the next race.
+     */
     if (
       (prevPhase === 'WINNER_CEREMONY' ||
         prevPhase === 'UNLOCK_CEREMONY') &&
